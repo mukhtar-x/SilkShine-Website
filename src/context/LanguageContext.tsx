@@ -14,15 +14,21 @@ const LanguageContext = createContext<LanguageContextType>({} as LanguageContext
 
 export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const { t, i18n } = useTranslation();
-    const [language, setLanguageState] = useState(i18n.language || 'en');
+    const getNormalizedLanguage = (lang: string) => {
+        if (!lang) return 'en';
+        const base = lang.split('-')[0].toLowerCase();
+        return base === 'ur' ? 'ur' : 'en';
+    };
+
+    const [language, setLanguageState] = useState(getNormalizedLanguage(i18n.language));
 
     const setLanguage = (lang: string) => {
         i18n.changeLanguage(lang);
-        setLanguageState(lang);
+        setLanguageState(getNormalizedLanguage(lang));
     };
 
     useEffect(() => {
-        setLanguageState(i18n.language);
+        setLanguageState(getNormalizedLanguage(i18n.language));
     }, [i18n.language]);
 
     const value: LanguageContextType = {

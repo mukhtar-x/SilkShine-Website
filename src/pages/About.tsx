@@ -7,7 +7,7 @@ import about2 from '../assets/about-2.jpg';
 
 const About: React.FC = () => {
     const { language } = useLanguage();
-    const t = (obj: any) => obj[language];
+    const t = (obj: any) => obj[language] || obj['en'] || Object.values(obj)[0];
 
     return (
         <div className="animate-fade-in-up space-y-20 pb-20">

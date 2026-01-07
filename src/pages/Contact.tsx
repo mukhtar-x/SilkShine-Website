@@ -6,7 +6,7 @@ import { MapPin, Mail, Phone, Send } from 'lucide-react';
 
 const Contact: React.FC = () => {
     const { language, t: translate } = useLanguage();
-    const t = (obj: any) => obj[language];
+    const t = (obj: any) => obj[language] || obj['en'] || Object.values(obj)[0];
 
     const getIcon = (name: string) => {
         switch (name) {
