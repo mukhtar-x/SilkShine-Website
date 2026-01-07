@@ -1,5 +1,5 @@
-
-import React, { createContext, useContext, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 
 interface LanguageContextType {
@@ -9,20 +9,27 @@ interface LanguageContextType {
     dir: 'ltr' | 'rtl';
 }
 
-const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
+// Use a cast to satisfy TypeScript
+const LanguageContext = createContext<LanguageContextType>({} as LanguageContextType);
 
 export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const { t, i18n } = useTranslation();
+    const [language, setLanguageState] = useState(i18n.language || 'en');
 
     const setLanguage = (lang: string) => {
         i18n.changeLanguage(lang);
+        setLanguageState(lang);
     };
 
-    const value = {
-        language: i18n.language,
+    useEffect(() => {
+        setLanguageState(i18n.language);
+    }, [i18n.language]);
+
+    const value: LanguageContextType = {
+        language,
         setLanguage,
         t,
-        dir: i18n.language === 'ur' ? 'rtl' : 'ltr'
+        dir: language === 'ur' ? 'rtl' : 'ltr'
     };
 
     return (

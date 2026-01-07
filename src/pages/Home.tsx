@@ -4,7 +4,6 @@ import { Link, useNavigate } from 'react-router-dom';
 import { PRODUCTS } from '../constants/products';
 import { useApp } from '../context/AppContext';
 import { useLanguage } from '../context/LanguageContext';
-import heroBg from '../assets/hero-bg.jpg';
 import bottleShot from '../assets/bottle-shot.png';
 import { ArrowRight, Leaf, ShieldCheck, Star, Truck } from 'lucide-react';
 
