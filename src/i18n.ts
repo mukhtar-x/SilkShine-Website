@@ -45,6 +45,12 @@ const resources = {
             quickLinks: 'Quick Links',
             connect: 'Connect With Us',
             copyright: 'All rights reserved.',
+            directOrganic: 'Direct from organic farms',
+            certifiedPurity: 'Certified Purity & Safety',
+            freeShipping: 'Free shipping over $50',
+            bestNourishment: '"Nourishment that speaks for itself."',
+            searchProducts: 'Search products...',
+            noProductsFound: 'No products found for',
 
             // Dynamic Data Keys (mapped for convenience)
             aboutTitle: ABOUT_DATA.hero.title.en,
@@ -94,6 +100,12 @@ const resources = {
             quickLinks: 'کوئیک لنکس',
             connect: 'ہم سے رابطہ کریں',
             copyright: 'جملہ حقوق محفوظ ہیں۔',
+            directOrganic: 'براہ راست آرگینک فارمز سے',
+            certifiedPurity: 'مصدقہ پاکیزگی اور حفاظت',
+            freeShipping: '$50 سے زیادہ پر مفت ترسیل',
+            bestNourishment: '"ایسی غذا جو خود بولتی ہے۔"',
+            searchProducts: 'مصنوعات تلاش کریں...',
+            noProductsFound: 'کے لیے کوئی مصنوعات نہیں ملیں',
 
             // Dynamic Data Keys
             aboutTitle: ABOUT_DATA.hero.title.ur,

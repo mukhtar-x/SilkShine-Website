@@ -18,7 +18,7 @@ const Home: React.FC = () => {
     return (
         <div className="animate-fade-in-up pb-12">
             {/* Hero Section */}
-            <section className="relative max-h-[82vh] min-h-[80vh]  shadow-xl container mx-auto px-4 mt-8 mb-20 overflow-hidden rounded-[3rem] bg-yellow-50 dark:bg-gray-900 transition-colors">
+            <section className="relative max-w-[95%]  md:max-h-[82vh] min-h-[80vh]  shadow-xl container mx-auto px-4 mt-8 mb-20 overflow-hidden rounded-[3rem] bg-yellow-50 dark:bg-gray-900 transition-colors">
 
                 {/* Background Layer */}
                 <div className="absolute inset-0 bg-white/40 dark:bg-black/40 z-0"></div>
@@ -26,23 +26,23 @@ const Home: React.FC = () => {
                 <div className="relative z-10 w-full h-full flex flex-col justify-center min-h-[80vh] py-5 px-4 md:px-12">
                     <div className="grid md:grid-cols-2 gap-12 items-center">
                         {/* Left: Content */}
-                        <div className="text-left space-y-8 max-w-xl">
-                            <h1 className="text-5xl md:text-7xl font-bold tracking-tight text-gray-900 dark:text-white leading-[1.1]">
+                        <div className="text-left space-y-6 md:space-y-8 max-w-xl">
+                            <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold tracking-tight text-gray-900 dark:text-white leading-[1.1]">
                                 {t('heroTitle')}
                             </h1>
-                            <p className="text-xl md:text-2xl text-gray-700 dark:text-gray-200 opacity-90 leading-relaxed font-light">
+                            <p className="text-lg sm:text-xl md:text-2xl text-gray-700 dark:text-gray-200 opacity-90 leading-relaxed font-light">
                                 {t('heroSubtitle')}
                             </p>
                             <div className="flex flex-wrap gap-4 pt-4">
                                 <button
                                     onClick={() => navigate('/products')}
-                                    className="bg-yellow-500 hover:bg-yellow-400 text-black font-bold py-4 px-10 rounded-2xl text-lg transition-all transform hover:scale-105 shadow-xl shadow-yellow-500/20 flex items-center gap-3"
+                                    className="bg-yellow-500 hover:bg-yellow-400 text-black font-bold py-3 px-8 md:py-4 md:px-10 rounded-2xl text-base md:text-lg transition-all transform hover:scale-105 shadow-xl shadow-yellow-500/20 flex items-center gap-3"
                                 >
-                                    {t('shopCollection')} <ArrowRight className="w-6 h-6" />
+                                    {t('shopCollection')} <ArrowRight className="w-5 h-5 md:w-6 md:h-6" />
                                 </button>
                                 <button
                                     onClick={() => navigate('/about')}
-                                    className="bg-white/50 dark:bg-gray-800/50 backdrop-blur-md border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white font-bold py-4 px-10 rounded-2xl text-lg transition-all hover:bg-white dark:hover:bg-gray-800"
+                                    className="bg-white/50 dark:bg-gray-800/50 backdrop-blur-md border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white font-bold py-3 px-8 md:py-4 md:px-10 rounded-2xl text-base md:text-lg transition-all hover:bg-white dark:hover:bg-gray-800"
                                 >
                                     {t('story')}
                                 </button>
@@ -65,7 +65,7 @@ const Home: React.FC = () => {
                             <img
                                 src={bottleShot}
                                 alt="SilkShine Bottle"
-                                className="w-full max-w-[450px] object-contain drop-shadow-2xl transform -rotate-6 hover:rotate-0 transition-all duration-700 hover:scale-105 z-10"
+                                className="w-full max-w-[280px] sm:max-w-[350px] md:max-w-[450px] object-contain drop-shadow-2xl transform -rotate-6 hover:rotate-0 transition-all duration-700 hover:scale-105 z-10"
                                 style={{
                                     WebkitMaskImage: 'radial-gradient(circle, black 75%, transparent 100%)',
                                     maskImage: 'radial-gradient(circle, black 75%, transparent 100%)',
@@ -86,7 +86,7 @@ const Home: React.FC = () => {
                     </div>
                     <div className="text-left">
                         <h4 className="font-bold text-gray-900 dark:text-white text-lg">{t('organic')}</h4>
-                        <p className="text-sm text-gray-600 dark:text-gray-400 font-medium tracking-tight">Direct from organic farms</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400 font-medium tracking-tight">{t('directOrganic')}</p>
                     </div>
                 </div>
                 <div className="flex items-center gap-5 px-6 border-y md:border-y-0 md:border-x border-gray-200/50 dark:border-gray-800/50 group transition-all">
@@ -95,7 +95,7 @@ const Home: React.FC = () => {
                     </div>
                     <div className="text-left">
                         <h4 className="font-bold text-gray-900 dark:text-white text-lg">{t('labTested')}</h4>
-                        <p className="text-sm text-gray-600 dark:text-gray-400 font-medium tracking-tight">Certified Purity & Safety</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400 font-medium tracking-tight">{t('certifiedPurity')}</p>
                     </div>
                 </div>
                 <div className="flex items-center gap-5 px-6 group transition-all">
@@ -104,7 +104,7 @@ const Home: React.FC = () => {
                     </div>
                     <div className="text-left">
                         <h4 className="font-bold text-gray-900 dark:text-white text-lg">{t('fastDelivery')}</h4>
-                        <p className="text-sm text-gray-600 dark:text-gray-400 font-medium tracking-tight">Free shipping over $50</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400 font-medium tracking-tight">{t('freeShipping')}</p>
                     </div>
                 </div>
             </div>
@@ -117,7 +117,7 @@ const Home: React.FC = () => {
                 <div className="text-center mb-16 space-y-4">
                     <span className="text-yellow-600 dark:text-yellow-400 font-bold tracking-widest uppercase text-sm">{t('shopCollection')}</span>
                     <h2 className="text-4xl md:text-5xl font-bold dark:text-white tracking-tight">{t('bestSellers')}</h2>
-                    <p className="text-gray-500 dark:text-gray-400 max-w-lg mx-auto text-lg italic">"Nourishment that speaks for itself."</p>
+                    <p className="text-gray-500 dark:text-gray-400 max-w-lg mx-auto text-lg italic">{t('bestNourishment')}</p>
                 </div>
 
                 <div className="grid md:grid-cols-3 gap-8 mb-12">

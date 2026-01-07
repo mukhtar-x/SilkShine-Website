@@ -28,7 +28,7 @@ const Products: React.FC = () => {
                 <div className="max-w-md mx-auto relative mt-8">
                     <input
                         type="text"
-                        placeholder="Search products..."
+                        placeholder={t('searchProducts')}
                         className="w-full pl-12 pr-4 py-3 rounded-full border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-yellow-500 outline-none shadow-sm"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
@@ -77,7 +77,7 @@ const Products: React.FC = () => {
                 </div>
             ) : (
                 <div className="text-center py-20">
-                    <p className="text-xl text-gray-500 dark:text-gray-400">No products found for "{searchQuery}"</p>
+                    <p className="text-xl text-gray-500 dark:text-gray-400">{t('noProductsFound')} "{searchQuery}"</p>
                 </div>
             )}
         </div>
