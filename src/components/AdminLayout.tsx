@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
-import { LayoutDashboard, ShoppingCart, Package, FileText, Settings, LogOut } from 'lucide-react';
+import { LayoutDashboard, ShoppingCart, Package, FileText, LogOut } from 'lucide-react';
 
 const AdminLayout: React.FC = () => {
     const location = useLocation();

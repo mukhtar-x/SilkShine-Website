@@ -22,8 +22,8 @@ const Products: React.FC = () => {
     const categories = useMemo(() => {
         const catSet = new Set<string>();
         PRODUCTS.forEach(product => {
-            if (product.category) {
-                catSet.add(product.category);
+            if (product?.category) {
+                catSet.add(product?.category);
             }
         });
         return ['All', ...Array.from(catSet)];
@@ -36,7 +36,7 @@ const Products: React.FC = () => {
                 product.description.toLowerCase().includes(searchQuery.toLowerCase());
 
             const matchesCategory =
-                selectedCategory === 'All' || product.category === selectedCategory;
+                selectedCategory === 'All' || product?.category === selectedCategory;
 
             return matchesSearch && matchesCategory;
         }).sort((a, b) => {
@@ -198,7 +198,7 @@ const Products: React.FC = () => {
                                         <div className="p-5 flex flex-col flex-grow justify-between">
                                             <div>
                                                 <span className="text-[10px] font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/50 px-2 py-0.5 rounded">
-                                                    {product.category || 'Hair Care'}
+                                                    {product?.category || 'Hair Care'}
                                                 </span>
                                                 <h3 className="text-lg font-bold dark:text-white group-hover:text-amber-500 transition-colors line-clamp-1 mt-1.5 mb-1">
                                                     {product.name}

@@ -12,6 +12,7 @@ export interface Product {
     image: string;
     rating: number;
     reviews: number;
+    category : string;
 }
 
 export const PRODUCTS: Product[] = [
@@ -23,6 +24,7 @@ export const PRODUCTS: Product[] = [
         sizes: ['200L Drum', '50L Drum'],
         image: bottleShot,
         rating: 4.8,
+        category : "none",
         reviews: 124
     },
     {
@@ -33,6 +35,7 @@ export const PRODUCTS: Product[] = [
         sizes: ['20L Can', '5L Can'],
         image: productShowcase,
         rating: 4.9,
+        category : "none",
         reviews: 89
     },
     {
@@ -43,6 +46,7 @@ export const PRODUCTS: Product[] = [
         sizes: ['5L Can', '1L Bottle'],
         image: about1,
         rating: 4.7,
+        category : "none",
         reviews: 215
     },
     {
@@ -53,6 +57,7 @@ export const PRODUCTS: Product[] = [
         sizes: ['1L Bottle', '500ml'],
         image: about2,
         rating: 4.6,
+        category : "none",
         reviews: 56
     },
     {
@@ -63,6 +68,7 @@ export const PRODUCTS: Product[] = [
         sizes: ['500ml', '200ml'],
         image: productShowcase,
         rating: 4.8,
+        category : "none",
         reviews: 142
     },
     {
@@ -73,6 +79,7 @@ export const PRODUCTS: Product[] = [
         sizes: ['200L Drum', '20L Can'],
         image: bottleShot,
         rating: 4.9,
+        category : "none",
         reviews: 312
     }
 ];

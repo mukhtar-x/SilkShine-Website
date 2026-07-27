@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Printer, Plus, Trash2, ArrowLeft, Download } from 'lucide-react';
+import { Printer, Plus, Trash2, ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 interface LineItem {
