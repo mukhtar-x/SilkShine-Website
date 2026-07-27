@@ -52,18 +52,6 @@ export const BENEFITS_DATA = [
     {
         title: { en: 'Repairs Damaged Hair', ur: 'خراب بالوں کی مرمت' },
         content: { en: 'Restores strength and moisture to chemically treated, dull, or sun-damaged hair.', ur: 'کیمیائی استعمال، سورج یا آلودگی سے متاثرہ بالوں کو بحال کرتا ہے۔' }
-    },
-    {
-        title: { en: 'Balances Scalp Oil', ur: 'بال کے PH کے توازن برقرار رکھے' },
-        content: { en: 'Regulates excess oil production without drying your scalp.', ur: 'اضافی چکنائی کم کرتا ہے اور خشکی پیدا نہیں ہونے دیتا۔' }
-    },
-    {
-        title: { en: 'Non-Sticky & Light Formula', ur: 'ہلکا اور غیر چپچپا فارمولا' },
-        content: { en: 'Easily absorbs into scalp and hair — perfect for all hair types, men and women alike.', ur: 'جلدی جذب ہونے والا تیل جو ہر قسم کے بالوں کے لیے موزوں ہے — مرد و خواتین دونوں کے لیے۔' }
-    },
-    {
-        title: { en: 'Natural Aroma & Relaxing Feel', ur: 'قدرتی خوشبو اور سکون بخش احساس' },
-        content: { en: 'Infused with lavender, rosemary, and peppermint for a refreshing, calming experience.', ur: 'لیونڈر، روز میری اور پیپرمنٹ کی خوشبو سے ذہن کو راحت اور تروتازگی ملتی ہے۔' }
     }
 ];
 

@@ -1,90 +1,119 @@
-
 import React from 'react';
 import { ABOUT_DATA, BENEFITS_DATA } from '../constants/content';
 import { useLanguage } from '../context/LanguageContext';
 import about1 from '../assets/about-1.jpg';
 import about2 from '../assets/about-2.jpg';
+import { Award, ShieldCheck, Sparkles } from 'lucide-react';
+import Navbar from '../components/NavBar';
+import Footer from '../components/Footer';
 
 const About: React.FC = () => {
     const { language } = useLanguage();
-    const t = (obj: any) => obj[language] || obj['en'] || Object.values(obj)[0];
+    const t = (obj: any) => obj?.[language] || obj?.['en'] || (typeof obj === 'object' ? Object.values(obj)[0] : obj);
 
     return (
-        <div className="animate-fade-in-up space-y-20 pb-20">
-            {/* Hero / Our Story Section */}
-            <section className="container mx-auto px-4 mt-8">
-                <div className="relative bg-yellow-50 dark:bg-gray-900 rounded-[2.5rem] shadow-xl overflow-hidden px-8 py-16 md:p-20 grid md:grid-cols-2 gap-16 items-center border border-yellow-100 dark:border-gray-800 transition-colors">
+        <div className="w-full min-h-screen flex flex-col bg-gray-50 dark:bg-gray-950">
+            <Navbar />
+            
+            <div className="flex-grow">
+                {/* SECTION 1: HERO / STORY */}
+                <section className="w-full min-h-screen px-4 md:px-8 py-8">
+                    <div className="container  mx-auto bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-3xl p-6 md:p-8 border border-amber-500/10 shadow-xl flex flex-col justify-between overflow-hidden">
+                        <div className="grid min-h-[500px] lg:grid-cols-12 gap-6 items-center">
+                            
+                            {/* Text Content */}
+                            <div className="lg:col-span-7 space-y-3 text-center lg:text-left">
+                                <span className="inline-flex items-center gap-2 text-amber-500 font-bold text-xs uppercase tracking-widest bg-amber-500/10 px-3 py-1 rounded-full border border-amber-500/20">
+                                    <Sparkles className="w-3.5 h-3.5" />
+                                    Our Journey
+                                </span>
 
-                    {/* Background Overlays (Matches Home Theme) */}
-                    <div className="absolute inset-0 bg-white/40 dark:bg-black/40 z-0"></div>
-                    <div className="absolute inset-0 bg-gradient-to-br from-yellow-100 via-white to-white dark:from-yellow-900/40 dark:via-gray-900 dark:to-black z-0 opacity-50 dark:opacity-100"></div>
+                                <h1 className="text-2xl md:text-4xl font-black tracking-tight text-gray-900 dark:text-white leading-tight">
+                                    {t(ABOUT_DATA.hero.title)}
+                                </h1>
 
-                    {/* Left Column: Text Content */}
-                    <div className="order-1 relative z-10 dark:text-white animate-fade-in-up">
-                        <h1 className="text-5xl md:text-6xl font-bold mb-6 tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-400">
-                            {t(ABOUT_DATA.hero.title)}
-                        </h1>
-                        <h2 className="text-2xl font-medium text-yellow-600 dark:text-yellow-400 mb-8">
-                            {t(ABOUT_DATA.story.title)}
-                        </h2>
-                        <p className="text-lg text-gray-800 dark:text-gray-300 leading-relaxed mb-10 font-normal">
-                            {t(ABOUT_DATA.story.content)}
-                        </p>
+                                <h2 className="text-sm md:text-base font-bold text-amber-600 dark:text-amber-400">
+                                    {t(ABOUT_DATA.story.title)}
+                                </h2>
 
-                        <div className="grid grid-cols-3 gap-8 border-t border-gray-200/60 dark:border-gray-700/60 pt-10">
-                            {ABOUT_DATA.stats.map((stat, idx) => (
-                                <div key={idx} className="text-center group">
-                                    <div className="text-4xl font-bold text-gray-900 dark:text-white mb-2 group-hover:text-yellow-500 transition-colors">{stat.value}</div>
-                                    <div className="text-sm font-medium text-gray-500 dark:text-gray-400 tracking-wider uppercase">{t(stat.label)}</div>
+                                <p className="text-xs md:text-sm text-gray-600 dark:text-gray-300 leading-relaxed max-w-xl mx-auto lg:mx-0">
+                                    {t(ABOUT_DATA.story.content)}
+                                </p>
+
+                                <div className="grid grid-cols-3 gap-3 pt-3 border-t border-gray-200/60 dark:border-gray-800">
+                                    {ABOUT_DATA.stats.map((stat, idx) => (
+                                        <div key={idx} className="text-center lg:text-left">
+                                            <div className="text-xl md:text-2xl font-black text-amber-500">{stat.value}</div>
+                                            <div className="text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                                {t(stat.label)}
+                                            </div>
+                                        </div>
+                                    ))}
                                 </div>
-                            ))}
+                            </div>
+
+                            {/* Image Showcase */}
+                            <div className="lg:col-span-5 relative flex items-center justify-center gap-3">
+                                <div className="relative w-1/2 aspect-[4/5] max-h-56 md:max-h-64 rounded-2xl overflow-hidden shadow-md border-2 border-white dark:border-gray-800 transform -rotate-2 hover:rotate-0 transition-transform duration-300">
+                                    <img src={about1} alt="About 1" className="w-full h-full object-cover" />
+                                </div>
+                                <div className="relative w-1/2 aspect-[4/5] max-h-56 md:max-h-64 rounded-2xl overflow-hidden shadow-md border-2 border-white dark:border-gray-800 transform rotate-3 translate-y-2 hover:rotate-0 transition-transform duration-300">
+                                    <img src={about2} alt="About 2" className="w-full h-full object-cover" />
+                                </div>
+                            </div>
+
                         </div>
                     </div>
+                </section>
 
-                    {/* Right Column: Images */}
-                    <div className="order-2 relative z-10 h-full min-h-[500px] flex items-center justify-center">
-                        <div className="absolute inset-0 bg-yellow-200 dark:bg-yellow-900/20 rounded-full blur-3xl opacity-30 z-0 scale-75"></div>
-                        <div className="relative z-10 w-full grid grid-cols-2 gap-4">
-                            <img
-                                src={about1}
-                                className="rounded-3xl shadow-lg border-4 border-white dark:border-gray-800 w-full h-80 object-cover transform translate-y-12 hover:-translate-y-2 transition-transform duration-500"
-                                alt="Oil"
-                            />
-                            <img
-                                src={about2}
-                                className="rounded-3xl shadow-lg border-4 border-white dark:border-gray-800 w-full h-80 object-cover transform -translate-y-4 hover:translate-y-2 transition-transform duration-500"
-                                alt="Process"
-                            />
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            {/* Benefits Section */}
-            <section className="container mx-auto px-4 py-12">
-                <div className="relative rounded-[2.5rem] overflow-hidden bg-gradient-to-br from-yellow-50 to-white dark:from-gray-900 dark:to-black p-8 md:p-12 shadow-lg border border-yellow-100 dark:border-gray-800">
-                    <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-[0.03] dark:opacity-10"></div>
-                    <div className="relative z-10">
-                        <div className="text-center mb-12">
-                            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
+                {/* SECTION 2: BENEFITS */}
+                <section className="w-full px-4 min-h-screen md:px-8 py-8">
+                    <div className="container max-h-[600px]  mx-auto bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-3xl p-6 md:p-8 border border-amber-500/10 shadow-xl flex flex-col justify-between overflow-hidden">
+                        
+                        {/* Header */}
+                        <div className="text-center max-w-xl mx-auto mb-6">
+                            <span className="inline-flex items-center gap-1.5 text-amber-500 font-bold text-xs uppercase tracking-widest bg-amber-500/10 px-3 py-1 rounded-full border border-amber-500/20 mb-1">
+                                <ShieldCheck className="w-3.5 h-3.5" />
+                                Uncompromised Quality
+                            </span>
+                            <h2 className="text-xl md:text-3xl font-black text-gray-900 dark:text-white">
                                 {language === 'en' ? 'Why Choose SilkShine?' : 'سلک شائن کا انتخاب کیوں؟'}
                             </h2>
-                            <div className="w-16 h-1 bg-yellow-500 mx-auto rounded-full"></div>
                         </div>
 
-                        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {/* Benefits Grid */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
                             {BENEFITS_DATA.map((benefit, idx) => (
-                                <div key={idx} className="group bg-white dark:bg-white/5 backdrop-blur-sm p-6 rounded-2xl hover:shadow-md transition-all duration-300 border border-gray-100 dark:border-white/10 hover:border-yellow-200 dark:hover:border-yellow-500/50 hover:-translate-y-0.5 shadow-sm">
-                                    <h3 className="font-bold text-lg mb-2 text-gray-900 dark:text-white group-hover:text-yellow-600 dark:group-hover:text-yellow-400 transition-colors">{t(benefit.title)}</h3>
-                                    <p className="text-gray-600 dark:text-gray-400 leading-relaxed text-sm font-medium dark:font-light group-hover:text-gray-900 dark:group-hover:text-gray-300 transition-colors">
-                                        {t(benefit.content)}
-                                    </p>
+                                <div 
+                                    key={idx} 
+                                    className="group bg-gray-50/80 dark:bg-gray-800/50 p-4 rounded-2xl border border-gray-100 dark:border-gray-800 hover:border-amber-500/50 transition-all duration-300 shadow-sm"
+                                >
+                                    <div className="space-y-1">
+                                        <div className="w-7 h-7 rounded-lg bg-amber-500/10 text-amber-500 flex items-center justify-center font-black text-xs">
+                                            0{idx + 1}
+                                        </div>
+                                        <h3 className="font-bold text-xs md:text-sm text-gray-900 dark:text-white group-hover:text-amber-500 transition-colors">
+                                            {t(benefit.title)}
+                                        </h3>
+                                        <p className="text-gray-500 dark:text-gray-400 text-[11px] leading-relaxed">
+                                            {t(benefit.content)}
+                                        </p>
+                                    </div>
                                 </div>
                             ))}
                         </div>
+
+                        {/* Badge Footer */}
+                        <div className="pt-4 border-t border-gray-200/60 dark:border-gray-800 flex items-center justify-center gap-2 text-[11px] text-gray-500 dark:text-gray-400">
+                            <Award className="w-3.5 h-3.5 text-amber-500" />
+                            <span>Formulated with 100% certified organic botanical extracts & micro-filtered oils.[cite: 12]</span>
+                        </div>
+
                     </div>
-                </div>
-            </section>
+                </section>
+            </div>
+
+            <Footer />
         </div>
     );
 };
