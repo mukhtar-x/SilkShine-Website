@@ -28,7 +28,7 @@ const ProductDetail: React.FC = () => {
         <div className="w-full min-h-screen flex flex-col bg-gray-50/50 dark:bg-gray-950">
             <Navbar />
 
-            <div className="flex-grow pt-28 md:pt-32 pb-16">
+            <div className="flex-grow  pb-16">
                 {!product ? (
                     <div className="container mx-auto px-4 py-32 text-center space-y-6">
                         <h2 className="text-4xl font-bold dark:text-white">Product not found</h2>

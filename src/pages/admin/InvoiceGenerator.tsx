@@ -1,51 +1,78 @@
 import React, { useState, useEffect } from 'react';
-import { Printer, Plus, Trash2, ArrowLeft } from 'lucide-react';
+import { Plus, Trash2, ArrowLeft, Download } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import logo from "../../assets/logo.jpeg";
 
 interface LineItem {
     id: string;
     description: string;
+    subDescription?: string;
     quantity: number;
     rate: number;
-    taxPercent: number;
 }
 
 const InvoiceGenerator: React.FC = () => {
-    const [invoiceNo, setInvoiceNo] = useState(`INV-${Math.floor(1000 + Math.random() * 9000)}`);
-    const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
-    const [dueDate, setDueDate] = useState('');
-    const [paymentMethod, setPaymentMethod] = useState('Bank Transfer');
+    const [invoiceNo, setInvoiceNo] = useState('TV-2026-089');
+    const [date, setDate] = useState('July 28, 2026');
+    const [dueDate, setDueDate] = useState('August 28, 2026');
     
-    const [customerName, setCustomerName] = useState('');
-    const [customerAddress, setCustomerAddress] = useState('');
-    const [customerContact, setCustomerContact] = useState('');
+    // Seller Details (SilkShine Actual Data)
+    const [sellerName] = useState('SilkShine');
+    const [sellerLegalName] = useState('SilkShine Pvt Ltd');
+    const [sellerAddress] = useState('123 Industrial Estate, Phase II, Lahore, Pakistan 54000');
+    const [sellerPhone] = useState('+92 300 1234567');
+    const [sellerNtn] = useState('1234567-8 / 17-00-9821-3');
+    const [sellerEmail] = useState('billing@silkshine.pk');
+
+    // Buyer Details
+    const [buyerName, setBuyerName] = useState('Al-Habib Enterprises');
+    const [buyerAttn, setBuyerAttn] = useState('Muhammad Ali (Procurement Manager)');
+    const [buyerAddress, setBuyerAddress] = useState('Suite 12, Bahadurabad Chowrangi, Karachi, Sindh, Pakistan');
+    const [buyerPhone, setBuyerPhone] = useState('+92 21 34938210');
+    const [buyerNtn, setBuyerNtn] = useState('8765432-1');
 
     const [items, setItems] = useState<LineItem[]>([
-        { id: '1', description: 'SilkShine Premium Grade Oil (200L Drum)', quantity: 1, rate: 82000, taxPercent: 18 },
+        { 
+            id: '1', 
+            description: 'SilkShine Premium Grade Oil (200L Drum)', 
+            subDescription: 'High-performance industrial grade lubricant drum with anti-rust formulation.', 
+            quantity: 1, 
+            rate: 350000 
+        },
+        { 
+            id: '2', 
+            description: 'Industrial Lubrication Setup & Testing', 
+            subDescription: 'On-site viscosity check, machinery compatibility audit, and safety assessment.', 
+            quantity: 1, 
+            rate: 85000 
+        },
+        { 
+            id: '3', 
+            description: 'Staff Maintenance Workshop', 
+            subDescription: 'On-site corporate workshop conducted at buyer premises.', 
+            quantity: 2, 
+            rate: 25000 
+        },
     ]);
 
-    const [deliveryCharge, setDeliveryCharge] = useState(0);
-    const [discount, setDiscount] = useState(0);
+    const [deliveryCharge, setDeliveryCharge] = useState(3500);
+    const [taxRate, setTaxRate] = useState(15); // GST 15%
 
     const [totals, setTotals] = useState({ subtotal: 0, taxAmount: 0, grandTotal: 0 });
 
     useEffect(() => {
         let subtotal = 0;
-        let taxAmount = 0;
-
         items.forEach(item => {
-            const lineAmount = item.quantity * item.rate;
-            const lineTax = lineAmount * (item.taxPercent / 100);
-            subtotal += lineAmount;
-            taxAmount += lineTax;
+            subtotal += (item.quantity || 0) * (item.rate || 0);
         });
 
-        const grandTotal = subtotal + taxAmount + deliveryCharge - discount;
+        const taxAmount = subtotal * (taxRate / 100);
+        const grandTotal = subtotal + taxAmount + deliveryCharge;
         setTotals({ subtotal, taxAmount, grandTotal });
-    }, [items, deliveryCharge, discount]);
+    }, [items, deliveryCharge, taxRate]);
 
     const handleAddItem = () => {
-        setItems([...items, { id: Date.now().toString(), description: '', quantity: 1, rate: 0, taxPercent: 18 }]);
+        setItems([...items, { id: Date.now().toString(), description: '', subDescription: '', quantity: 1, rate: 0 }]);
     };
 
     const handleRemoveItem = (id: string) => {
@@ -56,178 +83,227 @@ const InvoiceGenerator: React.FC = () => {
         setItems(items.map(item => item.id === id ? { ...item, [field]: value } : item));
     };
 
-    const handlePrint = () => {
-        window.print();
-    };
-
     return (
-        <div className="max-w-5xl mx-auto space-y-6 print:space-y-0 print:m-0 print:max-w-none">
-            {/* Action Bar - Hidden in print */}
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-4 rounded-xl shadow-sm border border-gray-100 print-hidden">
+        <div className="max-w-4xl mx-auto space-y-4 md:space-y-6 print:space-y-0 print:m-0 print:max-w-none px-0 sm:px-4 md:px-0">
+            {/* Top Navigation Bar - Hidden on Print */}
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-4 rounded-xl shadow-sm border border-gray-100 print:hidden">
                 <div className="flex items-center gap-3">
                     <Link to="/admin" className="p-2 hover:bg-gray-100 rounded-lg transition-colors text-gray-500">
                         <ArrowLeft className="w-5 h-5" />
                     </Link>
-                    <h1 className="text-2xl font-bold text-navy-950">Invoice Generator</h1>
+                    <div>
+                        <h1 className="text-xl md:text-2xl font-bold text-gray-900">Invoice Generator</h1>
+                        <p className="text-xs text-gray-500">Exact A4 flex-spaced layout with SilkShine corporate branding.</p>
+                    </div>
                 </div>
-                <div className="flex gap-3">
-                    <button onClick={handlePrint} className="bg-amber-500 text-navy-950 px-5 py-2 rounded-lg font-bold hover:bg-amber-400 transition-colors flex items-center gap-2">
-                        <Printer className="w-5 h-5" />
-                        <span>Print / Save PDF</span>
+                <div className="flex gap-3 w-full sm:w-auto">
+                    <button onClick={() => window.print()} className="w-full sm:w-auto bg-black text-white px-4 py-2 rounded-lg font-medium hover:bg-gray-800 transition-colors flex items-center justify-center gap-2 text-sm shadow-sm">
+                        <Download className="w-4 h-4" />
+                        <span>Export / Print PDF</span>
                     </button>
                 </div>
             </div>
 
-            {/* A4 Invoice Container */}
-            <div className="bg-white p-8 md:p-12 shadow-xl border border-gray-100 print:shadow-none print:border-none print:p-0">
-                
-                {/* Invoice Header */}
-                <div className="flex justify-between items-start border-b-2 border-navy-900 pb-6 mb-6">
-                    <div>
-                        <h2 className="text-4xl font-bold text-navy-950 tracking-tight font-urdu">Silkshine</h2>
-                        <div className="text-gray-600 mt-2 text-sm space-y-1">
-                            <p>123 Industrial Estate, Phase II</p>
-                            <p>Lahore, Pakistan 54000</p>
-                            <p>Phone: +92 300 1234567</p>
-                            <p className="font-semibold text-navy-800">NTN: 1234567-8</p>
-                        </div>
-                    </div>
-                    <div className="text-right">
-                        <h2 className="text-3xl font-light text-gray-400 uppercase tracking-widest mb-2">Invoice</h2>
-                        <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm text-left">
-                            <label className="text-gray-500 font-semibold text-right">Invoice No:</label>
-                            <input type="text" value={invoiceNo} onChange={e => setInvoiceNo(e.target.value)} className="font-bold text-navy-900 focus:outline-none print:border-none" />
-                            
-                            <label className="text-gray-500 font-semibold text-right">Date:</label>
-                            <input type="date" value={date} onChange={e => setDate(e.target.value)} className="text-navy-900 focus:outline-none print:appearance-none print:border-none" />
-                            
-                            <label className="text-gray-500 font-semibold text-right">Due Date:</label>
-                            <input type="date" value={dueDate} onChange={e => setDueDate(e.target.value)} className="text-navy-900 focus:outline-none print:appearance-none print:border-none" />
-                        </div>
-                    </div>
-                </div>
-
-                {/* Bill To & Payment Info */}
-                <div className="grid md:grid-cols-2 gap-8 mb-8">
-                    <div>
-                        <h3 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-3">Bill To</h3>
-                        <div className="space-y-2">
-                            <input type="text" placeholder="Customer / Company Name" value={customerName} onChange={e => setCustomerName(e.target.value)} className="w-full font-bold text-lg text-navy-950 placeholder-gray-300 focus:outline-none focus:border-b focus:border-amber-500 transition-colors print:border-none" />
-                            <textarea placeholder="Delivery Address" value={customerAddress} onChange={e => setCustomerAddress(e.target.value)} className="w-full text-gray-700 resize-none h-16 placeholder-gray-300 focus:outline-none focus:border-b focus:border-amber-500 transition-colors print:border-none print:resize-none" />
-                            <input type="text" placeholder="Contact Number" value={customerContact} onChange={e => setCustomerContact(e.target.value)} className="w-full text-gray-700 placeholder-gray-300 focus:outline-none focus:border-b focus:border-amber-500 transition-colors print:border-none" />
-                        </div>
-                    </div>
-                    <div>
-                        <h3 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-3">Payment Details</h3>
-                        <div className="space-y-3 text-sm">
-                            <div className="flex gap-4">
-                                <span className="text-gray-500 w-24">Method:</span>
-                                <select value={paymentMethod} onChange={e => setPaymentMethod(e.target.value)} className="text-navy-900 font-medium focus:outline-none print:appearance-none">
-                                    <option>Cash on Delivery</option>
-                                    <option>Bank Transfer</option>
-                                    <option>Cheque</option>
-                                    <option>Online Payment</option>
-                                </select>
-                            </div>
-                            {paymentMethod === 'Bank Transfer' && (
-                                <div className="p-3 bg-gray-50 rounded border border-gray-100 print:border-none print:p-0">
-                                    <p className="text-gray-600">Bank: HBL Pakistan</p>
-                                    <p className="text-gray-600">A/C Title: Silkshine Pvt Ltd</p>
-                                    <p className="text-gray-600 font-medium">IBAN: PK23 HABB 0000 1234 5678</p>
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                </div>
-
-                {/* Line Items */}
-                <div className="mb-8">
-                    <table className="w-full text-left border-collapse">
-                        <thead>
-                            <tr className="bg-navy-900 text-white text-sm">
-                                <th className="p-3 font-semibold w-[40%]">Item Description</th>
-                                <th className="p-3 font-semibold text-center w-[15%]">Qty</th>
-                                <th className="p-3 font-semibold text-right w-[15%]">Rate (Rs.)</th>
-                                <th className="p-3 font-semibold text-center w-[10%]">Tax %</th>
-                                <th className="p-3 font-semibold text-right w-[15%]">Amount (Rs.)</th>
-                                <th className="p-3 print-hidden w-[5%]"></th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-gray-100">
-                            {items.map((item) => (
-                                <tr key={item.id} className="group hover:bg-gray-50 transition-colors print:hover:bg-white">
-                                    <td className="p-3">
-                                        <input type="text" placeholder="Product name/description" value={item.description} onChange={e => handleItemChange(item.id, 'description', e.target.value)} className="w-full text-navy-950 font-medium bg-transparent focus:outline-none" />
+            {/* Print-Optimized Container mirroring exact HTML .page-wrapper with flex balance */}
+            <div className="bg-white p-4 sm:p-8 md:p-12 shadow-md rounded-2xl border border-gray-100 text-[9.5pt] text-[#222222] font-sans print:shadow-none print:border-none print:p-0 print:m-0 flex flex-col justify-between min-h-[257mm] overflow-x-hidden">
+                <div>
+                    {/* Top Header */}
+                    <div className="w-full mb-[25px] pb-[18px] border-b border-[#e0e0e0]">
+                        <table className="w-full border-collapse">
+                            <tbody>
+                                <tr className="flex sm:table-row">
+                                    <td className="w-full sm:w-1/2 align-top p-0 mb-4 sm:mb-0">
+                                        <div className="text-[20pt] sm:text-[28pt] font-light tracking-[2px] text-[#111111] uppercase mb-[10px]">Invoice</div>
+                                        <div className="text-[9pt] text-[#444444] leading-[1.6] space-y-0.5">
+                                            <div><strong className="text-[#111111]">Invoice No:</strong> <input type="text" value={invoiceNo} onChange={e => setInvoiceNo(e.target.value)} className="font-semibold text-[#111111] bg-transparent border-b border-transparent hover:border-gray-300 focus:border-black outline-none w-32 print:border-none print:p-0" /></div>
+                                            <div><strong className="text-[#111111]">Date:</strong> <input type="text" value={date} onChange={e => setDate(e.target.value)} className="text-[#111111] bg-transparent border-b border-transparent hover:border-gray-300 focus:border-black outline-none w-36 print:border-none print:p-0" /></div>
+                                            <div><strong className="text-[#111111]">Due Date:</strong> <input type="text" value={dueDate} onChange={e => setDueDate(e.target.value)} className="text-[#111111] bg-transparent border-b border-transparent hover:border-gray-300 focus:border-black outline-none w-36 print:border-none print:p-0" /></div>
+                                        </div>
                                     </td>
-                                    <td className="p-3">
-                                        <input type="number" min="1" value={item.quantity || ''} onChange={e => handleItemChange(item.id, 'quantity', Number(e.target.value))} className="w-full text-center text-gray-700 bg-transparent focus:outline-none" />
-                                    </td>
-                                    <td className="p-3">
-                                        <input type="number" min="0" value={item.rate || ''} onChange={e => handleItemChange(item.id, 'rate', Number(e.target.value))} className="w-full text-right text-gray-700 bg-transparent focus:outline-none" />
-                                    </td>
-                                    <td className="p-3">
-                                        <input type="number" min="0" max="100" value={item.taxPercent || ''} onChange={e => handleItemChange(item.id, 'taxPercent', Number(e.target.value))} className="w-full text-center text-gray-700 bg-transparent focus:outline-none" />
-                                    </td>
-                                    <td className="p-3 text-right font-medium text-navy-950">
-                                        {((item.quantity || 0) * (item.rate || 0)).toLocaleString()}
-                                    </td>
-                                    <td className="p-3 print-hidden">
-                                        <button onClick={() => handleRemoveItem(item.id)} className="text-gray-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity">
-                                            <Trash2 className="w-4 h-4" />
-                                        </button>
+                                    <td className="w-full sm:w-1/2 align-top text-left sm:text-right p-0">
+                                        {/* Actual SilkShine Logo */}
+                                        <div className="inline-flex items-center justify-center bg-[#111111] text-white mb-[15px] sm:mb-[20px]">
+                                            <img src={logo} alt="SilkShine Logo" className="h-[70px] sm:h-[120px] w-[70px] sm:w-[120px]" />
+                                        </div>
+                                        <div className="text-[12pt] font-bold text-[#111111] mb-[3px]">{sellerName}</div>
+                                        <div className="text-[8.5pt] text-[#555555] leading-[1.4]">
+                                            {sellerAddress}<br/>
+                                            Tel: {sellerPhone} | {sellerEmail}
+                                        </div>
                                     </td>
                                 </tr>
-                            ))}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    {/* Participants Section: Seller & Buyer Details */}
+                    <table className="w-full border-collapse mb-[50px] sm:mb-[90px]">
+                        <tbody>
+                            <tr className="flex flex-col sm:table-row">
+                                <td className="w-full sm:w-1/2 align-top pr-0 sm:pr-[25px] p-0 mb-6 sm:mb-0">
+                                    <div className="text-[9pt] font-bold text-[#111111] uppercase tracking-[0.5px] border-b border-[#111111] pb-[4px] mb-[8px]">Issued By (Seller)</div>
+                                    <div className="text-[9pt] text-[#444444] leading-[1.5] m-0 space-y-0.5">
+                                        <strong className="text-[#111111]">{sellerLegalName}</strong><br/>
+                                        {sellerAddress}<br/>
+                                        Phone: {sellerPhone}<br/>
+                                        NTN / STRN: {sellerNtn}
+                                    </div>
+                                </td>
+                                <td className="w-full sm:w-1/2 align-top pl-0 sm:pl-[25px] p-0">
+                                    <div className="text-[9pt] font-bold text-[#111111] uppercase tracking-[0.5px] border-b border-[#111111] pb-[4px] mb-[8px]">Billed To (Buyer)</div>
+                                    <div className="text-[9pt] text-[#444444] leading-[1.5] m-0 space-y-1">
+                                        <input type="text" value={buyerName} onChange={e => setBuyerName(e.target.value)} className="w-full font-bold text-[#111111] bg-transparent border-b border-transparent hover:border-gray-300 focus:border-black outline-none print:border-none print:p-0" placeholder="Buyer Company Name" />
+                                        <input type="text" value={buyerAttn} onChange={e => setBuyerAttn(e.target.value)} className="w-full text-[#444444] bg-transparent border-b border-transparent hover:border-gray-300 focus:border-black outline-none print:border-none print:p-0" placeholder="Attn: Person" />
+                                        <input type="text" value={buyerAddress} onChange={e => setBuyerAddress(e.target.value)} className="w-full text-[#444444] bg-transparent border-b border-transparent hover:border-gray-300 focus:border-black outline-none print:border-none print:p-0" placeholder="Address" />
+                                        <div className="flex flex-col sm:flex-row gap-2">
+                                            <input type="text" value={buyerPhone} onChange={e => setBuyerPhone(e.target.value)} className="w-full sm:w-1/2 text-[#444444] bg-transparent border-b border-transparent hover:border-gray-300 focus:border-black outline-none print:border-none print:p-0" placeholder="Phone" />
+                                            <input type="text" value={buyerNtn} onChange={e => setBuyerNtn(e.target.value)} className="w-full sm:w-1/2 text-[#444444] bg-transparent border-b border-transparent hover:border-gray-300 focus:border-black outline-none print:border-none print:p-0" placeholder="NTN" />
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
                         </tbody>
                     </table>
-                    <button onClick={handleAddItem} className="mt-3 text-amber-600 text-sm font-semibold flex items-center gap-1 hover:text-amber-700 print-hidden">
+
+                    {/* Items Table - Responsive scroll wrapper */}
+                    <div className="overflow-x-auto w-full mb-[30px]">
+                        <table className="w-full border-collapse min-w-[600px] sm:min-w-full">
+                            <thead>
+                                <tr>
+                                    <th className="border-t border-b border-[#111111] text-[#111111] font-bold text-left py-[10px] px-[8px] text-[9pt] uppercase tracking-[0.5px] bg-[#fcfcfc] w-[8%]">Item</th>
+                                    <th className="border-t border-b border-[#111111] text-[#111111] font-bold text-left py-[10px] px-[8px] text-[9pt] uppercase tracking-[0.5px] bg-[#fcfcfc] w-[44%]">Description</th>
+                                    <th className="border-t border-b border-[#111111] text-[#111111] font-bold text-center py-[10px] px-[8px] text-[9pt] uppercase tracking-[0.5px] bg-[#fcfcfc] w-[10%]">Qty</th>
+                                    <th className="border-t border-b border-[#111111] text-[#111111] font-bold text-right py-[10px] px-[8px] text-[9pt] uppercase tracking-[0.5px] bg-[#fcfcfc] w-[18%]">Price (PKR)</th>
+                                    <th className="border-t border-b border-[#111111] text-[#111111] font-bold text-right py-[10px] px-[8px] text-[9pt] uppercase tracking-[0.5px] bg-[#fcfcfc] w-[20%]">Amount (PKR)</th>
+                                    <th className="border-t border-b border-[#111111] bg-[#fcfcfc] w-[5%] print:hidden"></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {items.map((item, index) => (
+                                    <tr key={item.id} className="hover:bg-gray-50 print:hover:bg-white">
+                                        <td className="py-[14px] px-[8px] border-b border-dotted border-[#cccccc] font-medium text-[#111111] align-top">{index + 1}.</td>
+                                        <td className="py-[14px] px-[8px] border-b border-dotted border-[#cccccc] text-[#333333] align-top space-y-1">
+                                            <input 
+                                                type="text" 
+                                                value={item.description} 
+                                                onChange={e => handleItemChange(item.id, 'description', e.target.value)} 
+                                                className="w-full font-bold text-[#111111] bg-transparent border border-transparent hover:border-gray-200 focus:border-black p-1 rounded outline-none print:border-none print:p-0" 
+                                                placeholder="Item Title"
+                                            />
+                                            <input 
+                                                type="text" 
+                                                value={item.subDescription || ''} 
+                                                onChange={e => handleItemChange(item.id, 'subDescription', e.target.value)} 
+                                                className="w-full text-[8pt] text-[#666666] bg-transparent border border-transparent hover:border-gray-200 focus:border-black p-1 rounded outline-none print:border-none print:p-0" 
+                                                placeholder="Item description details..."
+                                            />
+                                        </td>
+                                        <td className="py-[14px] px-[8px] border-b border-dotted border-[#cccccc] text-center align-top">
+                                            <input 
+                                                type="number" 
+                                                min="1" 
+                                                value={item.quantity || ''} 
+                                                onChange={e => handleItemChange(item.id, 'quantity', Number(e.target.value))} 
+                                                className="w-full text-center bg-transparent border border-transparent hover:border-gray-200 focus:border-black p-1 rounded outline-none print:border-none print:p-0" 
+                                            />
+                                        </td>
+                                        <td className="py-[14px] px-[8px] border-b border-dotted border-[#cccccc] text-right align-top">
+                                            <input 
+                                                type="number" 
+                                                min="0" 
+                                                value={item.rate || ''} 
+                                                onChange={e => handleItemChange(item.id, 'rate', Number(e.target.value))} 
+                                                className="w-full text-right bg-transparent border border-transparent hover:border-gray-200 focus:border-black p-1 rounded outline-none print:border-none print:p-0" 
+                                            />
+                                        </td>
+                                        <td className="py-[14px] px-[8px] border-b border-dotted border-[#cccccc] text-right font-bold text-[#111111] align-top pt-4">
+                                            {((item.quantity || 0) * (item.rate || 0)).toLocaleString()}
+                                        </td>
+                                        <td className="py-[14px] px-[8px] border-b border-dotted border-[#cccccc] text-center align-top print:hidden">
+                                            <button onClick={() => handleRemoveItem(item.id)} className="text-gray-400 hover:text-red-500 p-1">
+                                                <Trash2 className="w-4 h-4" />
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <button onClick={handleAddItem} className="text-black font-semibold mb-[30px] text-xs flex items-center gap-1 hover:underline pt-1 print:hidden">
                         <Plus className="w-4 h-4" /> Add Line Item
                     </button>
+
+                    {/* Bottom Section: Bank Info & Totals */}
+                    <table className="w-full border-collapse mb-[30px]">
+                        <tbody>
+                            <tr className="flex flex-col sm:table-row">
+                                <td className="w-full sm:w-[55%] align-top p-0 mb-6 sm:mb-0">
+                                    <div className="text-[9pt] text-[#444444] leading-[1.6] mr-0 sm:mr-[20px]">
+                                        <strong className="text-[#111111]">Payment Terms & Bank Details:</strong><br/>
+                                        Due within 30 days via Online IBFT or Crossed Cheque.<br/>
+                                        <strong className="text-[#111111]">Bank Name:</strong> Meezan Bank Limited, Karachi<br/>
+                                        <strong className="text-[#111111]">Account Title:</strong> {sellerLegalName}<br/>
+                                        <strong className="text-[#111111]">Account No:</strong> PK36MEZN0001234567890123
+                                    </div>
+                                </td>
+                                <td className="hidden sm:table-cell w-[5%] p-0"></td>
+                                <td className="w-full sm:w-[40%] align-top p-0">
+                                    <table className="w-full border-collapse">
+                                        <tbody>
+                                            <tr>
+                                                <td className="text-right text-[#555555] py-[7px] px-[8px] text-[9pt]">Subtotal:</td>
+                                                <td className="text-right font-bold text-[#111111] py-[7px] px-[8px] text-[9pt] w-[45%]">PKR {totals.subtotal.toLocaleString()}</td>
+                                            </tr>
+                                            <tr>
+                                                <td className="text-right text-[#555555] py-[7px] px-[8px] text-[9pt]">Delivery Charges:</td>
+                                                <td className="text-right py-[7px] px-[8px] text-[9pt]">
+                                                    <input 
+                                                        type="number" 
+                                                        min="0" 
+                                                        value={deliveryCharge} 
+                                                        onChange={e => setDeliveryCharge(Number(e.target.value))} 
+                                                        className="w-24 text-right font-bold text-[#111111] bg-gray-50 hover:bg-white focus:bg-white border border-gray-200 rounded px-1 py-0.5 outline-none print:border-none print:bg-transparent print:p-0" 
+                                                    />
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td className="text-right text-[#555555] py-[7px] px-[8px] text-[9pt]">
+                                                    <div className="flex items-center justify-end gap-1">
+                                                        <span>Tax (GST</span>
+                                                        <input 
+                                                            type="number" 
+                                                            min="0" 
+                                                            max="100" 
+                                                            value={taxRate} 
+                                                            onChange={e => setTaxRate(Number(e.target.value))} 
+                                                            className="w-10 text-center font-medium bg-gray-50 hover:bg-white focus:bg-white border border-gray-200 rounded outline-none print:border-none print:bg-transparent print:p-0" 
+                                                        />
+                                                        <span>%):</span>
+                                                    </div>
+                                                </td>
+                                                <td className="text-right font-bold text-[#111111] py-[7px] px-[8px] text-[9pt]">PKR {totals.taxAmount.toLocaleString()}</td>
+                                            </tr>
+                                            <tr className="border-t border-b border-[#111111]">
+                                                <td className="text-right font-bold text-[11pt] text-[#111111] py-[10px] px-[8px]">Total:</td>
+                                                <td className="text-right font-bold text-[11pt] text-[#111111] py-[10px] px-[8px]">PKR {totals.grandTotal.toLocaleString()}</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    {/* Gratitude Section */}
+                    <div className="text-center py-[18px] border-t border-b border-[#eeeeee] mb-[20px]">
+                        <p className="text-[10pt] italic font-medium text-[#222222] m-0">Thank you for your valuable business. It is a pleasure serving you!</p>
+                    </div>
                 </div>
 
-                {/* Totals Calculation */}
-                <div className="flex flex-col md:flex-row justify-between items-start border-t-2 border-gray-100 pt-6">
-                    <div className="w-full md:w-1/2 mb-6 md:mb-0 pr-8">
-                        <h3 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-2">Terms & Conditions</h3>
-                        <p className="text-xs text-gray-500 leading-relaxed">
-                            1. Payment is due within the stipulated time.<br/>
-                            2. Goods once sold will not be returned.<br/>
-                            3. Please make cheques payable to "Silkshine Pvt Ltd".
-                        </p>
-                    </div>
-                    <div className="w-full md:w-[40%] space-y-3">
-                        <div className="flex justify-between text-gray-600">
-                            <span>Subtotal:</span>
-                            <span className="font-medium text-navy-950">Rs. {totals.subtotal.toLocaleString()}</span>
-                        </div>
-                        <div className="flex justify-between text-gray-600">
-                            <span>Tax Amount:</span>
-                            <span className="font-medium text-navy-950">Rs. {totals.taxAmount.toLocaleString()}</span>
-                        </div>
-                        <div className="flex justify-between items-center text-gray-600">
-                            <span>Delivery/Freight:</span>
-                            <div className="flex items-center gap-1">
-                                <span>Rs.</span>
-                                <input type="number" min="0" value={deliveryCharge || ''} onChange={e => setDeliveryCharge(Number(e.target.value))} className="w-24 text-right font-medium text-navy-950 bg-gray-50 p-1 rounded focus:outline-none focus:ring-1 focus:ring-amber-500 print:bg-transparent print:p-0" />
-                            </div>
-                        </div>
-                        <div className="flex justify-between items-center text-gray-600">
-                            <span>Discount:</span>
-                            <div className="flex items-center gap-1">
-                                <span>- Rs.</span>
-                                <input type="number" min="0" value={discount || ''} onChange={e => setDiscount(Number(e.target.value))} className="w-24 text-right font-medium text-red-600 bg-gray-50 p-1 rounded focus:outline-none focus:ring-1 focus:ring-amber-500 print:bg-transparent print:p-0" />
-                            </div>
-                        </div>
-                        <div className="flex justify-between items-center border-t-2 border-navy-900 pt-3 mt-3">
-                            <span className="text-lg font-bold text-navy-950">Grand Total:</span>
-                            <span className="text-2xl font-bold text-amber-600">Rs. {totals.grandTotal.toLocaleString()}</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div className="mt-16 text-center text-sm text-gray-400 print-only">
-                    <p>Thank you for your business!</p>
-                    <p className="mt-1">Generated by Silkshine Invoice System</p>
+                {/* Footer */}
+                <div className="text-center text-[8pt] text-[#777777] mt-auto pt-4">
+                    {sellerLegalName} &bull; {sellerAddress} &bull; www.silkshine.pk
                 </div>
             </div>
         </div>

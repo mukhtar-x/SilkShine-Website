@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Invoice</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 15mm 20mm;
+            background-color: #ffffff;
+        }
+        *, *::before, *::after {
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            color: #222222;
+            margin: 0;
+            padding: 0;
+            font-size: 9.5pt;
+            line-height: 1.5;
+            background-color: #ffffff;
+            height: 100%;
+        }
+        .page-wrapper {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            min-height: 257mm; /* Full printable height of A4 minus margins */
+        }
+        .top-container {
+            width: 100%;
+            margin-bottom: 25px;
+            padding-bottom: 18px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .top-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .top-table td {
+            vertical-align: top;
+            padding: 0;
+        }
+        .invoice-title-cell {
+            width: 50%;
+        }
+        .invoice-title {
+            font-size: 28pt;
+            font-weight: 300;
+            letter-spacing: 2px;
+            color: #111111;
+            margin: 0 0 10px 0;
+            text-transform: uppercase;
+        }
+        .invoice-meta {
+            font-size: 9pt;
+            color: #444444;
+            line-height: 1.6;
+        }
+        .invoice-meta strong {
+            color: #111111;
+        }
+        .company-cell {
+            width: 50%;
+            text-align: right;
+        }
+        .logo-mark {
+            display: inline-block;
+            width: 32px;
+            height: 32px;
+            background-color: #111111;
+            color: #ffffff;
+            font-weight: bold;
+            font-size: 11pt;
+            text-align: center;
+            line-height: 32px;
+            border-radius: 4px;
+            margin-bottom: 6px;
+        }
+        .company-name {
+            font-size: 12pt;
+            font-weight: bold;
+            color: #111111;
+            margin: 0 0 3px 0;
+        }
+        .company-details {
+            font-size: 8.5pt;
+            color: #555555;
+            line-height: 1.4;
+        }
+        .participants-section {
+            width: 100%;
+            margin-bottom: 30px;
+            border-collapse: collapse;
+        }
+        .participants-section td {
+            width: 50%;
+            vertical-align: top;
+        }
+        .participants-section td:first-child {
+            padding-right: 25px;
+        }
+        .participants-section td:last-child {
+            padding-left: 25px;
+        }
+        .participant-title {
+            font-size: 9pt;
+            font-weight: bold;
+            color: #111111;
+            margin: 0 0 8px 0;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid #111111;
+            padding-bottom: 4px;
+        }
+        .participant-details {
+            font-size: 9pt;
+            color: #444444;
+            line-height: 1.5;
+            margin: 0;
+        }
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 30px;
+        }
+        .items-table th {
+            border-top: 1px solid #111111;
+            border-bottom: 1px solid #111111;
+            color: #111111;
+            font-weight: bold;
+            text-align: left;
+            padding: 10px 8px;
+            font-size: 9pt;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            background-color: #fcfcfc;
+        }
+        .items-table th.right, .items-table td.right {
+            text-align: right;
+        }
+        .items-table th.center, .items-table td.center {
+            text-align: center;
+        }
+        .items-table td {
+            padding: 14px 8px;
+            border-bottom: 1px dotted #cccccc;
+            font-size: 9pt;
+            color: #333333;
+            vertical-align: top;
+        }
+        .bottom-section {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 30px;
+        }
+        .bottom-section td {
+            vertical-align: top;
+            padding: 0;
+        }
+        .bank-info {
+            font-size: 9pt;
+            color: #444444;
+            line-height: 1.6;
+            margin-right: 20px;
+        }
+        .bank-info strong {
+            color: #111111;
+        }
+        .totals-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .totals-table td {
+            padding: 7px 8px;
+            font-size: 9pt;
+        }
+        .totals-table td.label {
+            color: #555555;
+            text-align: right;
+        }
+        .totals-table td.value {
+            color: #111111;
+            font-weight: bold;
+            text-align: right;
+            width: 45%;
+        }
+        .totals-table tr.grand-total td {
+            font-size: 11pt;
+            font-weight: bold;
+            color: #111111;
+            border-top: 1px solid #111111;
+            border-bottom: 1px solid #111111;
+            padding: 10px 8px;
+        }
+        .gratitude-section {
+            text-align: center;
+            padding: 18px 0;
+            border-top: 1px solid #eeeeee;
+            border-bottom: 1px solid #eeeeee;
+            margin-bottom: 20px;
+        }
+        .gratitude-message {
+            font-size: 10pt;
+            font-style: italic;
+            color: #222222;
+            font-weight: 500;
+            margin: 0;
+        }
+        .footer {
+            text-align: center;
+            font-size: 8pt;
+            color: #777777;
+        }
+    </style>
+</head>
+<body>
+
+<div class="page-wrapper">
+    <div>
+        <!-- Top Header -->
+        <div class="top-container">
+            <table class="top-table">
+                <tr>
+                    <td class="invoice-title-cell">
+                        <div class="invoice-title">Invoice</div>
+                        <div class="invoice-meta">
+                            <strong>Invoice No:</strong> TV-2026-089<br>
+                            <strong>Date:</strong> July 28, 2026<br>
+                            <strong>Due Date:</strong> August 28, 2026
+                        </div>
+                    </td>
+                    <td class="company-cell">
+                        <div class="logo-mark">TV</div>
+                        <div class="company-name">TechVentures Pakistan</div>
+                        <div class="company-details">
+                            Office 402, Techno City, I.I. Chundrigar Road<br>
+                            Karachi, Sindh, Pakistan<br>
+                            Tel: +92 21 32214567 | billing@techventures.pk
+                        </div>
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+        <!-- Participants Section: Seller & Buyer Details -->
+        <table class="participants-section">
+            <tr>
+                <!-- Seller Details -->
+                <td>
+                    <div class="participant-title">Issued By (Seller)</div>
+                    <div class="participant-details">
+                        <strong>TechVentures Pakistan (Pvt) Ltd</strong><br>
+                        Office 402, Techno City, I.I. Chundrigar Road<br>
+                        Karachi, Sindh, Pakistan<br>
+                        Phone: +92 21 32214567<br>
+                        NTN / STRN: 3482910-2 / 17-00-9821-3
+                    </div>
+                </td>
+                <!-- Buyer Details -->
+                <td>
+                    <div class="participant-title">Billed To (Buyer)</div>
+                    <div class="participant-details">
+                        <strong>Al-Habib Enterprises</strong><br>
+                        Attn: Muhammad Ali (Procurement Manager)<br>
+                        Suite 12, Bahadurabad Chowrangi<br>
+                        Karachi, Sindh, Pakistan<br>
+                        Phone: +92 21 34938210<br>
+                        NTN: 8765432-1
+                    </div>
+                </td>
+            </tr>
+        </table>
+
+        <!-- Items Table -->
+        <table class="items-table">
+            <thead>
+                <tr>
+                    <th style="width: 8%;">Item</th>
+                    <th style="width: 44%;">Description</th>
+                    <th class="center" style="width: 10%;">Qty</th>
+                    <th class="right" style="width: 18%;">Price (PKR)</th>
+                    <th class="right" style="width: 20%;">Amount (PKR)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>1.</td>
+                    <td>
+                        <strong>Cloud ERP Software License</strong><br>
+                        <span style="font-size: 8pt; color: #666;">Annual multi-user enterprise edition with localized inventory & payroll.</span>
+                    </td>
+                    <td class="center">1</td>
+                    <td class="right">350,000</td>
+                    <td class="right">350,000</td>
+                </tr>
+                <tr>
+                    <td>2.</td>
+                    <td>
+                        <strong>Server Deployment & Setup</strong><br>
+                        <span style="font-size: 8pt; color: #666;">On-premise configuration, database setup, and security hardening.</span>
+                    </td>
+                    <td class="center">1</td>
+                    <td class="right">85,000</td>
+                    <td class="right">85,000</td>
+                </tr>
+                <tr>
+                    <td>3.</td>
+                    <td>
+                        <strong>Staff Training Session</strong><br>
+                        <span style="font-size: 8pt; color: #666;">On-site corporate workshop conducted at buyer premises.</span>
+                    </td>
+                    <td class="center">2</td>
+                    <td class="right">25,000</td>
+                    <td class="right">50,000</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- Bottom Section: Bank Info & Totals -->
+        <table class="bottom-section">
+            <tr>
+                <td style="width: 55%;">
+                    <div class="bank-info">
+                        <strong>Payment Terms & Bank Details:</strong><br>
+                        Due within 30 days via Online IBFT or Crossed Cheque.<br>
+                        <strong>Bank Name:</strong> Meezan Bank Limited, Karachi<br>
+                        <strong>Account Title:</strong> TechVentures Pakistan (Pvt) Ltd<br>
+                        <strong>Account No:</strong> PK36MEZN0001234567890123
+                    </div>
+                </td>
+                <td style="width: 5%;"></td>
+                <td style="width: 40%;">
+                    <table class="totals-table">
+                        <tr>
+                            <td class="label">Subtotal:</td>
+                            <td class="value">PKR 485,000</td>
+                        </tr>
+                        <tr>
+                            <td class="label">Delivery Charges:</td>
+                            <td class="value">PKR 3,500</td>
+                        </tr>
+                        <tr>
+                            <td class="label">Tax (GST 15%):</td>
+                            <td class="value">PKR 72,750</td>
+                        </tr>
+                        <tr class="grand-total">
+                            <td class="label">Total:</td>
+                            <td class="value">PKR 561,250</td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+        </table>
+
+        <!-- Gratitude Section -->
+        <div class="gratitude-section">
+            <p class="gratitude-message">Thank you for your valuable business. It is a pleasure serving you!</p>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+        TechVentures Pakistan (Pvt) Ltd &bull; Office 402, Techno City, Karachi &bull; www.techventures.pk
+    </div>
+
+</div>
+
+</body>
+</html>

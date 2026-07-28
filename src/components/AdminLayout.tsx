@@ -1,15 +1,19 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
-import { LayoutDashboard, ShoppingCart, Package, FileText, LogOut } from 'lucide-react';
+import { LayoutDashboard, ShoppingCart, Package, FileText, LogOut, Menu, X } from 'lucide-react';
 
 const AdminLayout: React.FC = () => {
     const location = useLocation();
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
     const isActive = (path: string) => {
         if (path === '/admin' && location.pathname === '/admin') return true;
         if (path !== '/admin' && location.pathname.startsWith(path)) return true;
         return false;
     };
+
+    const toggleMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);
+    const closeMenu = () => setIsMobileMenuOpen(false);
 
     const navItems = [
         { path: '/admin', label: 'Dashboard', icon: <LayoutDashboard className="w-5 h-5" /> },
@@ -20,10 +24,44 @@ const AdminLayout: React.FC = () => {
 
     return (
         <div className="min-h-screen bg-navy-50 flex flex-col md:flex-row font-sans">
-            {/* Sidebar - hidden on print */}
-            <aside className="w-full md:w-64 bg-navy-900 text-white flex flex-col print-hidden shrink-0 shadow-xl z-20">
-                <div className="p-6 flex items-center justify-center border-b border-navy-800">
+            
+            {/* Mobile Header (Visible only on small screens) */}
+            <div className="md:hidden flex items-center justify-between bg-navy-900 text-white p-4 z-30 shadow-md print-hidden">
+                <h1 className="text-xl font-bold text-amber-500 tracking-tight">Silkshine Admin</h1>
+                <button 
+                    onClick={toggleMenu} 
+                    className="p-1 rounded-md text-navy-100 hover:text-white hover:bg-navy-800 transition-colors"
+                    aria-label="Toggle Menu"
+                >
+                    {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+                </button>
+            </div>
+
+            {/* Mobile Overlay Background */}
+            {isMobileMenuOpen && (
+                <div 
+                    className="fixed inset-0 bg-navy-950/50 backdrop-blur-sm z-40 md:hidden print-hidden transition-opacity"
+                    onClick={closeMenu}
+                />
+            )}
+
+            {/* Sidebar - Slide-out drawer on mobile, static column on desktop */}
+            <aside className={`
+                fixed inset-y-0 left-0 z-50 w-64 bg-navy-900 text-white flex flex-col print-hidden shadow-2xl md:shadow-xl
+                transform transition-transform duration-300 ease-in-out md:relative md:translate-x-0
+                ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}
+            `}>
+                {/* Desktop Logo (Hidden on mobile as it's in the top bar) */}
+                <div className="hidden md:flex p-6 items-center justify-center border-b border-navy-800">
                     <h1 className="text-2xl font-bold text-amber-500 tracking-tight">Silkshine Admin</h1>
+                </div>
+                
+                {/* Mobile Drawer Header */}
+                <div className="md:hidden p-5 flex items-center justify-between border-b border-navy-800">
+                    <h2 className="text-lg font-bold text-amber-500">Menu</h2>
+                    <button onClick={closeMenu} className="p-1 text-navy-100 hover:text-white bg-navy-800 rounded-md">
+                        <X className="w-5 h-5" />
+                    </button>
                 </div>
                 
                 <nav className="flex-1 py-6 px-4 space-y-2 overflow-y-auto">
@@ -31,6 +69,7 @@ const AdminLayout: React.FC = () => {
                         <Link
                             key={item.path}
                             to={item.path}
+                            onClick={closeMenu} // Close the menu when a link is clicked on mobile
                             className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors duration-200 ${
                                 isActive(item.path) 
                                 ? 'bg-amber-500 text-navy-950 font-semibold' 
@@ -55,7 +94,7 @@ const AdminLayout: React.FC = () => {
             </aside>
 
             {/* Main Content Area */}
-            <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 text-charcoal-900 flex flex-col print:bg-white print:overflow-visible">
+            <main className="flex-1 h-[calc(100vh-60px)] md:h-screen overflow-x-hidden overflow-y-auto bg-gray-50 text-charcoal-900 flex flex-col print:bg-white print:overflow-visible print:h-auto">
                 <div className="p-4 md:p-8 flex-1 w-full max-w-7xl mx-auto print:max-w-none print:p-0">
                     <Outlet />
                 </div>
