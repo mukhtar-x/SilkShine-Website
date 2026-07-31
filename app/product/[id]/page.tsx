@@ -77,15 +77,15 @@ export default function ProductDetailPage() {
                                         className="w-full h-full object-contain p-4 transition-transform duration-700 group-hover:scale-110"
                                     />
                                 </div>
-                                <div className="flex gap-3 p-1.5 bg-white/50 dark:bg-gray-800/50 backdrop-blur-md rounded-2xl border border-gray-100 dark:border-gray-700">
-                                    {[product.image, '/assets/about-1.jpg', '/assets/about-2.jpg'].map((img, index) => (
-                                        <button
+                                <div className="flex w-fit gap-3 p-1.5 bg-white/50 dark:bg-gray-800/50 backdrop-blur-md rounded-2xl border border-gray-100 dark:border-gray-700">
+                                    {(product.images ? product?.images : [product.image]).map((img: any, index: number) => (
+                                        (<button
                                             key={index}
                                             onClick={() => setActiveImage(index)}
-                                            className={`flex-1 aspect-square rounded-xl overflow-hidden border transition-all duration-300 ${activeImage === index ? 'border-yellow-500 scale-95 ring-2 ring-yellow-500/10' : 'border-transparent opacity-60 hover:opacity-100'}`}
+                                            className={`flex h-25 w-20 aspect-square rounded-xl overflow-hidden border transition-all duration-300 ${activeImage === index ? 'border-yellow-500 scale-95 ring-2 ring-yellow-500/10' : 'border-transparent opacity-60 hover:opacity-100'}`}
                                         >
-                                            <img src={getImageSrc(img)} alt={`View ${index + 1}`} className="w-full h-full object-cover" />
-                                        </button>
+                                            <img src={getImageSrc(img)} alt={`View ${index + 1}`} className="w-20 h-20 object-cover" />
+                                        </button>)
                                     ))}
                                 </div>
                             </div>

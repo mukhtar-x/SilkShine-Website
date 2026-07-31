@@ -1,5 +1,6 @@
 import mongoose, { Schema, Document, Model } from 'mongoose';
 
+
 interface BilingualString {
     en: string;
     ur: string;
@@ -10,6 +11,13 @@ interface StatItem {
     value: string;
 }
 
+interface ProcessStepItem {
+    step: number;
+    videoUrl: string;
+    title: BilingualString;
+    description: BilingualString;
+    keySpecs: string[]; // Or BilingualString[] if specifications are also bilingual
+}
 interface BenefitItem {
     title: BilingualString;
     content: BilingualString;
@@ -54,6 +62,8 @@ export interface ISiteMetadata extends Document {
         accountNo: string;
         paymentTerms: string;
     };
+    processSteps: ProcessStepItem[];
+
 }
 
 const BilingualSchema = new Schema<BilingualString>(
@@ -107,6 +117,14 @@ const SiteMetadataSchema = new Schema<ISiteMetadata>({
         accountNo: { type: String, default: 'PK36MEZN0001234567890123' },
         paymentTerms: { type: String, default: 'Due within 30 days via Online IBFT or Crossed Cheque.' },
     },
+    processSteps: [{
+        _id: false,
+        step: { type: Number, required: true },
+        videoUrl: { type: String, default: '' },
+        title: { type: BilingualSchema, required: true },
+        description: { type: BilingualSchema, required: true },
+        keySpecs: [{ type: String }]
+    }],
 }, { timestamps: true });
 
 const SiteMetadata: Model<ISiteMetadata> =

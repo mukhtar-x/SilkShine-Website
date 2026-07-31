@@ -15,18 +15,72 @@ import {
 import Footer from '@/components/Footer';
 import Navbar from '@/components/NavBar';
 
+interface ProcessStep {
+    step: string | number;
+    title: string;
+    desc: string;
+    icon: any;
+    videoUrl: string;
+    highlights: string[];
+}
+
+// Helper to detect and convert YouTube links to embed format
+const getYouTubeEmbedUrl = (url: string) => {
+    if (!url) return '';
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+    const match = url.match(regExp);
+    return (match && match[2].length === 11)
+        ? `https://www.youtube.com/embed/${match[2]}?autoplay=1&mute=1&loop=1&playlist=${match[2]}`
+        : url;
+};
+
+const isYouTubeUrl = (url: string) => {
+    return url && (url.includes('youtube.com') || url.includes('youtu.be'));
+};
+
 export default function HomePage() {
     const { addToCart } = useApp();
-    const { t } = useLanguage();
+    const { t, language } = useLanguage();
     const router = useRouter();
 
     const [currentIndex, setCurrentIndex] = useState(1);
     const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
     const [reviews, setReviews] = useState<Array<{ quote: string; author: string; role: string; initials: string; rating?: number }>>([]);
-    const [processVideos, setProcessVideos] = useState<{ step1Url?: string; step2Url?: string; step3Url?: string }>({});
+
+    // Dynamic process steps state
+    const [processSteps, setProcessSteps] = useState<ProcessStep[]>([]);
+
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const isBusyRef = useRef(false);
+
+    // Default fallback steps if none exist in settings
+    const defaultSteps: ProcessStep[] = [
+        {
+            step: "01",
+            title: "Seed Crushing & Extraction",
+            desc: "Raw organic seeds are precision-crushed to extract pure, high-grade natural oils.",
+            icon: Factory,
+            videoUrl: "",
+            highlights: ["Precision Seed Pressing", "Pure Organic Extraction", "Zero Impurities"]
+        },
+        {
+            step: "02",
+            title: "Measured Grinder Blending",
+            desc: "Extracted oils are weighted and blended in automated grinders to exact specifications.",
+            icon: Droplets,
+            videoUrl: "",
+            highlights: ["Automated Weight Scaling", "Thermal Vat Mixing", "Exact Formulation"]
+        },
+        {
+            step: "03",
+            title: "Bottling & Labeling",
+            desc: "Sterile automated lines precisely fill, cap, and label custom dropper bottles.",
+            icon: Package,
+            videoUrl: "",
+            highlights: ["Sterile Conveyor Line", "Automatic Sticker Labeling", "Airtight Sealing"]
+        }
+    ];
 
     useEffect(() => {
         let isMounted = true;
@@ -37,7 +91,7 @@ export default function HomePage() {
                 const [productsRes, reviewsRes, settingsRes] = await Promise.all([
                     fetch('/api/products'),
                     fetch('/api/reviews'),
-                    fetch('/api/settings').catch(() => null),
+                    fetch('/api/site-metadata').catch(() => null),
                 ]);
 
                 if (!productsRes.ok || !reviewsRes.ok) {
@@ -47,7 +101,7 @@ export default function HomePage() {
                 const productsData = await productsRes.json();
                 const reviewsData = await reviewsRes.json();
 
-                let settingsData = {};
+                let settingsData: any = {};
                 if (settingsRes && settingsRes.ok) {
                     settingsData = await settingsRes.json();
                 }
@@ -56,15 +110,38 @@ export default function HomePage() {
 
                 setFeaturedProducts(Array.isArray(productsData) ? productsData.slice(0, 3) : []);
                 setReviews(Array.isArray(reviewsData) ? reviewsData : []);
-                setProcessVideos({
-                    step1Url: (settingsData as any)?.step1VideoUrl || '',
-                    step2Url: (settingsData as any)?.step2VideoUrl || '',
-                    step3Url: (settingsData as any)?.step3VideoUrl || '',
-                });
+
+                // Parse processSteps from database settings if available, else fallback to default 3 steps
+                const fetchedSteps = settingsData?.processSteps || settingsData?.processsteps;
+                if (Array.isArray(fetchedSteps) && fetchedSteps.length > 0) {
+                    const formattedSteps: ProcessStep[] = fetchedSteps.map((item: any, idx: number) => {
+                        const titleText = typeof item.title === 'object' && item.title !== null
+                            ? (item.title[language] || item.title.en || 'Process Step')
+                            : (item.title || `Stage 0${idx + 1}`);
+
+                        const descText = typeof item.description === 'object' && item.description !== null
+                            ? (item.description[language] || item.description.en || '')
+                            : (item.description || item.Descriptipn || '');
+
+                        return {
+                            step: item.step ? String(item.step).padStart(2, '0') : String(idx + 1).padStart(2, '0'),
+                            title: titleText,
+                            desc: descText,
+                            icon: idx === 0 ? Factory : idx === 1 ? Droplets : Package,
+                            videoUrl: item.videoUrl || '',
+                            highlights: Array.isArray(item.keySpecs) ? item.keySpecs : ["Precision Standards", "Automated Quality Control", "Pure Processing"]
+                        };
+                    });
+                    setProcessSteps(formattedSteps);
+                } else {
+                    setProcessSteps(defaultSteps);
+                }
+
                 setError('');
             } catch (err) {
                 if (!isMounted) return;
                 setError(err instanceof Error ? err.message : 'Unable to load homepage data');
+                setProcessSteps(defaultSteps);
             } finally {
                 if (isMounted) setLoading(false);
             }
@@ -75,51 +152,26 @@ export default function HomePage() {
         return () => {
             isMounted = false;
         };
-    }, []);
-
-    const processSteps = [
-        {
-            step: "01",
-            title: "Seed Crushing & Extraction",
-            desc: "Raw organic seeds are precision-crushed to extract pure, high-grade natural oils.",
-            icon: Factory,
-            videoUrl: processVideos.step1Url,
-            highlights: ["Precision Seed Pressing", "Pure Organic Extraction", "Zero Impurities"]
-        },
-        {
-            step: "02",
-            title: "Measured Grinder Blending",
-            desc: "Extracted oils are weighted and blended in automated grinders to exact specifications.",
-            icon: Droplets,
-            videoUrl: processVideos.step2Url,
-            highlights: ["Automated Weight Scaling", "Thermal Vat Mixing", "Exact Formulation"]
-        },
-        {
-            step: "03",
-            title: "Bottling & Labeling",
-            desc: "Sterile automated lines precisely fill, cap, and label custom dropper bottles.",
-            icon: Package,
-            videoUrl: processVideos.step3Url,
-            highlights: ["Sterile Conveyor Line", "Automatic Sticker Labeling", "Airtight Sealing"]
-        }
-    ];
+    }, [language]);
 
     const getVisualStepIndex = (idx: number) => {
+        const total = processSteps.length > 0 ? processSteps.length : 3;
         if (idx <= 1) return 0;
-        if (idx >= 3) return 2;
+        if (idx >= total) return total - 1;
         return idx - 1;
     };
 
     const activeStepIndex = getVisualStepIndex(currentIndex);
-    const activeStep = processSteps[activeStepIndex];
+    const activeStep = processSteps[activeStepIndex] || defaultSteps[0];
 
     const handleStepChange = (direction: 'next' | 'prev') => {
         if (isBusyRef.current) return;
 
         const delta = direction === 'next' ? 1 : -1;
         const nextIndex = currentIndex + delta;
+        const totalSteps = processSteps.length > 0 ? processSteps.length : 3;
 
-        if (nextIndex < 1 || nextIndex > 3) return;
+        if (nextIndex < 1 || nextIndex > totalSteps) return;
 
         isBusyRef.current = true;
         setCurrentIndex(nextIndex);
@@ -206,7 +258,7 @@ export default function HomePage() {
                 </div>
             </section>
 
-            {/* 2. 3-STEP DYNAMIC VIDEO PROCESS SECTION */}
+            {/* 2. DYNAMIC VIDEO PROCESS SECTION */}
             <section
                 id="process"
                 className="min-h-[100dvh] lg:h-screen w-full md:snap-start md:snap-always relative flex flex-col justify-center bg-gray-50 dark:bg-gray-950 px-5 md:px-16 lg:px-24 py-16"
@@ -220,7 +272,7 @@ export default function HomePage() {
                             The SilkShine Process
                         </h2>
                         <p className="text-gray-600 dark:text-gray-400 text-xs md:text-sm leading-relaxed">
-                            Engineered through 3 automated stages for maximum purity and quality.
+                            Engineered through automated stages for maximum purity and quality.
                         </p>
                     </div>
 
@@ -245,25 +297,33 @@ export default function HomePage() {
 
                                 <div className="absolute top-5 left-5 z-20 flex items-center gap-2">
                                     <span className="bg-amber-500 text-slate-950 font-black text-xs px-3.5 py-1.5 rounded-xl shadow-lg tracking-wider uppercase">
-                                        Stage {activeStep.step} / 03
+                                        Stage {activeStep.step} / {String(processSteps.length).padStart(2, '0')}
                                     </span>
                                 </div>
 
-                                {/* Dynamic Video Rendering from Database / Admin Metadata with Placeholder Fallback */}
                                 {activeStep.videoUrl ? (
-                                    <video
-                                        key={activeStep.videoUrl}
-                                        src={activeStep.videoUrl}
-                                        autoPlay
-                                        loop
-                                        muted
-                                        playsInline
-                                        className="w-full h-full object-cover relative z-10 min-h-[220px] lg:min-h-[420px]"
-                                    />
+                                    isYouTubeUrl(activeStep.videoUrl) ? (
+                                        <iframe
+                                            src={getYouTubeEmbedUrl(activeStep.videoUrl)}
+                                            title={activeStep.title}
+                                            className="w-full h-full border-0 relative z-10 min-h-[220px] lg:min-h-[420px] pointer-events-none"
+                                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                        />
+                                    ) : (
+                                        <video
+                                            key={activeStep.videoUrl}
+                                            src={activeStep.videoUrl}
+                                            autoPlay
+                                            loop
+                                            muted
+                                            playsInline
+                                            className="w-full h-full object-cover relative z-10 min-h-[220px] lg:min-h-[420px]"
+                                        />
+                                    )
                                 ) : (
                                     <div className="relative z-10 flex flex-col items-center gap-3 p-6 text-center">
                                         <div className="w-16 h-16 bg-amber-500/10 border border-amber-500/30 rounded-full flex items-center justify-center text-amber-400">
-                                            <activeStep.icon className="w-7 h-7" />
+                                            <Factory className="w-7 h-7" />
                                         </div>
                                         <span className="text-xs text-amber-200/80 font-medium tracking-wide">
                                             Video link pending upload in admin panel metadata
@@ -276,7 +336,7 @@ export default function HomePage() {
                                 <div className="space-y-4">
                                     <div className="flex items-center gap-4">
                                         <div className="w-12 h-12 md:w-14 md:h-14 bg-amber-500/10 dark:bg-amber-500/20 text-amber-500 rounded-2xl flex items-center justify-center shrink-0 border border-amber-500/20">
-                                            <activeStep.icon className="w-6 h-6 md:w-7 md:h-7" />
+                                            <Factory className="w-6 h-6 md:w-7 md:h-7" />
                                         </div>
                                         <div>
                                             <span className="text-[10px] md:text-[11px] font-bold text-amber-600 dark:text-amber-400 uppercase tracking-widest block mb-0.5">
