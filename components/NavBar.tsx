@@ -19,8 +19,8 @@ const Navbar: React.FC = () => {
 
     return (
         <>
-            <nav className="sticky top-0 z-50 bg-white/80 dark:bg-gray-950/80 backdrop-blur-md border-b border-gray-200/50 dark:border-gray-800/50 py-2">
-                <div className="container mx-auto px-8 md:px-16 h-16 flex items-center justify-between">
+            <nav className="sticky pr-10 min-h-20 overflow-hidden top-0 z-50 bg-white/80 dark:bg-gray-950/80 backdrop-blur-md border-b border-gray-200/50 dark:border-gray-800/50 py-2">
+                <div className="container mx-auto px-3 md:px-16 h-16 flex items-center justify-between">
                     <Link href="/" className="text-3xl pb-5 font-black tracking-tight text-amber-600 flex items-center gap-2 font-urdu">
                         SilkShine
                     </Link>

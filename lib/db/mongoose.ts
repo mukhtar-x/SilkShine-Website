@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 
-const MONGODB_URI = process.env.MONGODB_URI!;
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://user:user@ac-6z3cewn-shard-00-00.eivhr1j.mongodb.net:27017,ac-6z3cewn-shard-00-01.eivhr1j.mongodb.net:27017,ac-6z3cewn-shard-00-02.eivhr1j.mongodb.net:27017/silkshine?ssl=true&replicaSet=atlas-uu6k4h-shard-0&authSource=admin&appName=db';
 
 if (!MONGODB_URI) {
     throw new Error('Please define the MONGODB_URI environment variable in .env.local');

@@ -179,7 +179,7 @@ export default function HomePage() {
     };
 
     return (
-        <div className="w-full h-screen overflow-y-auto md:snap-y md:snap-mandatory scroll-smooth [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+        <div className="w-full  h-screen overflow-y-auto md:snap-y md:snap-mandatory scroll-smooth [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
 
             {/* 1. HERO SECTION */}
             <section className="min-h-[100dvh] lg:h-screen w-full md:snap-start md:snap-always relative flex flex-col justify-between bg-gradient-to-b from-amber-50/40 via-white to-gray-50 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950 pb-12">
