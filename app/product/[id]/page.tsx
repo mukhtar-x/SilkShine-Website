@@ -125,8 +125,8 @@ export default function ProductDetailPage() {
 
                                 <div className="pt-6 border-t border-gray-100 dark:border-gray-800 space-y-5">
                                     <div className="flex items-end gap-2">
-                                        <span className="text-3xl font-bold text-gray-900 dark:text-white">${product.price}</span>
-                                        <span className="text-gray-400 text-sm line-through mb-1">${(product.price * 1.2).toFixed(2)}</span>
+                                        <span className="text-3xl font-bold text-gray-900 dark:text-white">PKR {product.price}</span>
+                                        <span className="text-gray-400 text-sm line-through mb-1">PKR {(product.price * 1.2).toFixed(2)}</span>
                                     </div>
 
                                     <div className="flex flex-col sm:flex-row gap-3">

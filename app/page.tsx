@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useLayoutEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import type { Product } from '@/constants/products';
@@ -178,6 +178,13 @@ export default function HomePage() {
         setTimeout(() => { isBusyRef.current = false; }, 300);
     };
 
+    const [isLoaded, setIsLoaded] = useState(false);
+
+    useLayoutEffect(() => {
+        // Fires instantly on load
+        setIsLoaded(true);
+    }, []);
+
     return (
         <div className="w-full  h-screen overflow-y-auto md:snap-y md:snap-mandatory scroll-smooth [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
 
@@ -187,6 +194,23 @@ export default function HomePage() {
 
                 <div className="container px-5 md:px-16 lg:px-24 mx-auto flex-grow flex items-center py-10 lg:py-0">
                     <div className="grid md:grid-cols-2 gap-12 lg:gap-16 items-center w-full">
+                        <div className="relative flex flex-col justify-center items-center py-2 px-4 group rounded-3xl overflow-hidden">
+                            {/* Welcome Text: Animates instantly with zero delay */}
+                            <div className={`mb-6 text-center transition-all duration-500 transform ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-2'}`}>
+                                <span className="inline-block text-[14px] sm:text-sm uppercase tracking-[0.3em] font-bold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/50 px-5 py-2 rounded-full border border-amber-200/50 dark:border-amber-800/50 shadow-sm transition-transform duration-300 hover:scale-105">
+                                    Welcome to SilkShine
+                                </span>
+                            </div>
+
+                            {/* Logo Image: Follows almost instantly (delay-75 instead of delay-150 or 300) */}
+                            <div className={`relative z-10 transition-all duration-500 delay-0 transform ${isLoaded ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-4 scale-95'}`}>
+                                <img
+                                    src="/assets/mainlogo.jpeg"
+                                    alt="SilkShine Product"
+                                    className="w-4/5 sm:w-full max-w-[300px] sm:max-w-md lg:max-w-lg object-contain rounded-2xl transition-transform duration-300 hover:scale-105 hover:-translate-y-1 active:scale-110"
+                                />
+                            </div>
+                        </div>
                         <div className="text-left space-y-6 max-w-2xl mt-4 md:mt-0">
                             <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs md:text-sm font-semibold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
                                 <Sparkles className="w-4 h-4" /> High Precision Industrial & Engine Lubricants
@@ -216,9 +240,9 @@ export default function HomePage() {
                         <div className="relative hidden md:flex justify-center items-center py-12 px-4 group rounded-3xl">
                             <div className="relative z-10">
                                 <img
-                                    src="/assets/bottle-shot.png"
+                                    src="/assets/mainlogo.jpeg"
                                     alt="SilkShine Product"
-                                    className="w-4/5 sm:w-full max-w-[300px] sm:max-w-md lg:max-w-lg object-contain drop-shadow-[0_20px_30px_rgba(0,0,0,0.12)] animate-pulse"
+                                    className="w-4/5 sm:w-full max-w-[300px] sm:max-w-md lg:max-w-lg object-contain  animate-pulse"
                                 />
                             </div>
                         </div>

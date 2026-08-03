@@ -79,4 +79,4 @@ export const PRODUCTS: Product[] = [
     }
 ];
 
-export const DELIVERY_CHARGES = 500;
+export const DELIVERY_CHARGES = 200;
