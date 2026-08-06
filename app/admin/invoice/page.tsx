@@ -96,6 +96,7 @@ export default function InvoiceGeneratorPage() {
     ]);
 
     const [deliveryCharge, setDeliveryCharge] = useState(0);
+    const [manualDiscount, setManualDiscount] = useState(0);
     const [taxRate, setTaxRate] = useState(0);
     const [bankName, setBankName] = useState('');
     const [accountTitle, setAccountTitle] = useState('');
@@ -111,10 +112,11 @@ export default function InvoiceGeneratorPage() {
         () => items.filter(item => item.rate >= 0).reduce((total, item) => total + item.quantity * item.rate, 0),
         [items]
     );
-    const discountTotal = useMemo(
+    const lineItemDiscountTotal = useMemo(
         () => items.filter(item => item.rate < 0).reduce((total, item) => total + Math.abs(item.quantity * item.rate), 0),
         [items]
     );
+    const discountTotal = lineItemDiscountTotal + manualDiscount;
     const netSubtotal = grossSubtotal - discountTotal;
     const taxAmount = useMemo(() => (netSubtotal * taxRate) / 100, [netSubtotal, taxRate]);
     const grandTotal = useMemo(() => netSubtotal + taxAmount + deliveryCharge, [netSubtotal, taxAmount, deliveryCharge]);
@@ -206,6 +208,7 @@ export default function InvoiceGeneratorPage() {
 
                     setItems(mappedItems);
                     setDeliveryCharge(0);
+                    setManualDiscount(0);
                     setTaxRate(0);
                 }
 
@@ -244,6 +247,20 @@ export default function InvoiceGeneratorPage() {
         setItems((prev) => prev.map((item) => (item.id === id ? { ...item, [field]: value } : item)));
     }
 
+    const finalPdfItems = useMemo(() => {
+        const list = [...items];
+        if (manualDiscount > 0) {
+            list.push({
+                id: 'manual-discount-item',
+                description: 'Extra Discount',
+                subDescription: '',
+                quantity: 1,
+                rate: -manualDiscount,
+            });
+        }
+        return list;
+    }, [items, manualDiscount]);
+
     const invoicePdfProps = {
         invoiceNo: invoiceNo || `SS-${new Date().getFullYear()}-001`,
         date,
@@ -259,7 +276,7 @@ export default function InvoiceGeneratorPage() {
         buyerAddress,
         buyerPhone,
         buyerNtn,
-        items,
+        items: finalPdfItems,
         deliveryCharge,
         taxRate,
         bankName,
@@ -576,7 +593,7 @@ export default function InvoiceGeneratorPage() {
 
                         <div className="mt-6 rounded-3xl border border-slate-200 bg-slate-50 p-5">
                             <h2 className="mb-4 text-sm font-semibold uppercase tracking-[0.24em] text-slate-600">Summary settings</h2>
-                            <div className="grid gap-4 xl:grid-cols-3">
+                            <div className="grid gap-4 xl:grid-cols-4">
                                 <div>
                                     <label className="block text-xs font-medium text-slate-600">Delivery charge</label>
                                     <input
@@ -584,6 +601,16 @@ export default function InvoiceGeneratorPage() {
                                         min={0}
                                         value={deliveryCharge}
                                         onChange={(e) => setDeliveryCharge(Number(e.target.value) || 0)}
+                                        className="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none focus:border-slate-400"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-medium text-slate-600">Manual Discount</label>
+                                    <input
+                                        type="number"
+                                        min={0}
+                                        value={manualDiscount}
+                                        onChange={(e) => setManualDiscount(Number(e.target.value) || 0)}
                                         className="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none focus:border-slate-400"
                                     />
                                 </div>
