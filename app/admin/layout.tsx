@@ -32,7 +32,8 @@ export default function AdminLayout({
         { path: '/admin', label: 'Dashboard', icon: <LayoutDashboard className="w-5 h-5" /> },
         { path: '/admin/orders', label: 'Orders', icon: <ShoppingCart className="w-5 h-5" /> },
         { path: '/admin/products', label: 'Products & Inventory', icon: <Package className="w-5 h-5" /> },
-        { path: '/admin/site-metadata', label: 'Site Metadata', icon: <Settings className="w-5 h-5" /> },
+        { path: '/admin/settings', label: 'Store Settings', icon: <Settings className="w-5 h-5" /> },
+        { path: '/admin/site-metadata', label: 'Site Metadata', icon: <FileText className="w-5 h-5" /> },
         { path: '/admin/invoice', label: 'Invoice Generator', icon: <FileText className="w-5 h-5" /> },
     ];
 

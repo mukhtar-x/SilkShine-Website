@@ -29,10 +29,10 @@ export default function AdminLoginPage() {
         throw new Error(data?.error || 'Invalid credentials');
       }
 
-      router.push('/admin');
+      router.refresh();
+      window.location.href = '/admin';
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unable to sign in');
-    } finally {
       setIsSubmitting(false);
     }
   };

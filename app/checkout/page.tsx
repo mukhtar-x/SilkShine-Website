@@ -1,21 +1,37 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useApp } from '@/lib/context/AppContext';
 import { useLanguage } from '@/lib/context/LanguageContext';
-import { DELIVERY_CHARGES } from '@/constants/products';
-import { Minus, Plus, Trash2, CheckCircle, CreditCard, Banknote, Truck, ArrowRight } from 'lucide-react';
+import { Minus, Plus, Trash2, CheckCircle, CreditCard, Banknote, Truck, ArrowRight, Tag, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 import Navbar from '@/components/NavBar';
 import Footer from '@/components/Footer';
 
+// Google Drive Image URL Converter Utility
+const formatDriveImageUrl = (url: string): string => {
+    if (!url || typeof url !== 'string') return '';
+    const match = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/) || url.match(/\?id=([a-zA-Z0-9_-]+)/);
+    if (match && match[1]) {
+        return `https://drive.google.com/thumbnail?id=${match[1]}`;
+    }
+    return url;
+};
+
 export default function CheckoutPage() {
-    const { cart, updateQuantity, removeFromCart, cartTotal, clearCart } = useApp();
+    const { cart, updateQuantity, removeFromCart, clearCart } = useApp();
     const { t } = useLanguage();
     const [step, setStep] = useState<'cart' | 'details' | 'success'>('cart');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [submitError, setSubmitError] = useState('');
     const [orderId, setOrderId] = useState('');
+
+    // Global settings state
+    const [deliveryCharge, setDeliveryCharge] = useState<number>(500);
+    const [taxRate, setTaxRate] = useState<number>(0);
+
+    // Active Discount Event State
+    const [activeEvent, setActiveEvent] = useState<{ title: string; code: string; discountPercentage: number } | null>(null);
 
     const [formData, setFormData] = useState({
         name: '',
@@ -26,12 +42,68 @@ export default function CheckoutPage() {
     const [paymentMethod, setPaymentMethod] = useState<'cash' | 'card'>('cash');
     const [coupon, setCoupon] = useState('');
     const [discount, setDiscount] = useState(0);
+    const [couponMessage, setCouponMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+    const [validatingCoupon, setValidatingCoupon] = useState(false);
 
-    const finalTotal = cartTotal + DELIVERY_CHARGES - discount;
+    // Fetch global settings and active discount events on mount
+    useEffect(() => {
+        fetch('/api/settings')
+            .then((res) => (res.ok ? res.json() : null))
+            .then((data) => {
+                if (data) {
+                    if (data.deliveryCharge != null) setDeliveryCharge(Number(data.deliveryCharge));
+                    if (data.taxRate != null) setTaxRate(Number(data.taxRate));
+                }
+            })
+            .catch((err) => console.error('Error fetching global settings:', err));
 
-    const handleApplyCoupon = () => {
-        if (coupon.toLowerCase() === 'shine10') {
-            setDiscount(cartTotal * 0.1);
+        fetch('/api/discounts/active')
+            .then((res) => (res.ok ? res.json() : null))
+            .then((data) => {
+                if (data && data.code) {
+                    setActiveEvent(data);
+                }
+            })
+            .catch((err) => console.error('Error fetching active discount event:', err));
+    }, []);
+
+    // Accurate subtotal and total calculations
+    const subtotal = cart.reduce((total, item) => total + (Number(item.price) || 0) * (Number(item.quantity) || 1), 0);
+    const taxAmount = Math.round(((subtotal - discount) * taxRate) / 100);
+    const finalTotal = Math.max(0, subtotal - discount + taxAmount + deliveryCharge);
+
+    // Coupon Validation Logic
+    const handleApplyCoupon = async () => {
+        if (!coupon.trim()) return;
+        setValidatingCoupon(true);
+        setCouponMessage(null);
+
+        try {
+            const res = await fetch('/api/discounts/validate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ code: coupon, cart }),
+            });
+            const data = await res.json();
+
+            if (!res.ok) {
+                setDiscount(0);
+                throw new Error(data?.error || 'Invalid promo code');
+            }
+
+            setDiscount(Number(data.discountAmount) || 0);
+            setCouponMessage({
+                type: 'success',
+                text: `Coupon '${data.code}' applied! You saved PKR ${data.discountAmount.toLocaleString()} (${data.discountPercentage}% OFF).`,
+            });
+        } catch (err) {
+            setDiscount(0);
+            setCouponMessage({
+                type: 'error',
+                text: err instanceof Error ? err.message : 'Failed to apply coupon',
+            });
+        } finally {
+            setValidatingCoupon(false);
         }
     };
 
@@ -49,9 +121,11 @@ export default function CheckoutPage() {
                     cart,
                     formData,
                     paymentMethod,
-                    cartTotal,
+                    cartTotal: subtotal,
                     discount,
-                    deliveryCharges: DELIVERY_CHARGES,
+                    deliveryCharges: deliveryCharge,
+                    taxAmount,
+                    totalAmount: finalTotal,
                 }),
             });
             const data = await res.json();
@@ -66,7 +140,10 @@ export default function CheckoutPage() {
         }
     };
 
-    const getImageSrc = (img: any) => typeof img === 'string' ? img : img?.src;
+    const getImageSrc = (img: any) => {
+        const rawUrl = typeof img === 'string' ? img : img?.src;
+        return formatDriveImageUrl(rawUrl);
+    };
 
     return (
         <div className="w-full min-h-screen flex flex-col bg-gray-50 dark:bg-gray-950">
@@ -74,7 +151,7 @@ export default function CheckoutPage() {
 
             <div className="flex-grow pt-4 pb-10">
                 {submitError && (
-                    <div className="container mx-auto px-4 pb-4">
+                    <div className="container mx-auto px-4 pb-4 max-w-6xl">
                         <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/30 dark:text-red-100">
                             {submitError}
                         </div>
@@ -83,16 +160,16 @@ export default function CheckoutPage() {
 
                 {step === 'success' ? (
                     <div className="min-h-[60vh] flex flex-col items-center justify-center text-center px-4 animate-fade-in-up">
-                        <div className="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mb-6 text-green-500">
+                        <div className="w-24 h-24 bg-green-100 dark:bg-green-950/40 rounded-full flex items-center justify-center mb-6 text-green-500">
                             <CheckCircle className="w-12 h-12" />
                         </div>
                         <h1 className="text-4xl font-bold mb-4 dark:text-white">Order Placed Successfully!</h1>
-                        <p className="text-gray-500 mb-2 max-w-md">
+                        <p className="text-gray-500 dark:text-gray-400 mb-2 max-w-md">
                             Thank you for choosing SilkShine. Your order has been confirmed and will be shipped to {formData.address}.
                         </p>
                         {orderId && (
-                            <p className="text-sm text-gray-500 mb-8">
-                                Your order number is <strong>{orderId}</strong>.
+                            <p className="text-sm text-gray-500 dark:text-gray-400 mb-8">
+                                Your order number is <strong className="text-amber-600 dark:text-amber-400">{orderId}</strong>.
                             </p>
                         )}
                         <Link href="/" className="bg-slate-950 dark:bg-white text-white dark:text-slate-950 px-8 py-3 rounded-full hover:opacity-90 transition-colors font-bold">
@@ -102,13 +179,13 @@ export default function CheckoutPage() {
                 ) : cart.length === 0 ? (
                     <div className="min-h-[60vh] flex flex-col items-center justify-center text-center px-4">
                         <h1 className="text-2xl font-bold mb-4 dark:text-white">{t('yourCart')}</h1>
-                        <p className="text-gray-500 mb-8">{t('emptyCart')}</p>
+                        <p className="text-gray-500 dark:text-gray-400 mb-8">{t('emptyCart')}</p>
                         <Link href="/products" className="text-amber-600 hover:text-amber-700 font-bold underline">
                             {t('browseProducts')}
                         </Link>
                     </div>
                 ) : (
-                    <div className="container mx-auto px-4 py-8 animate-fade-in-up">
+                    <div className="container mx-auto px-4 py-8 animate-fade-in-up max-w-6xl">
                         <div className="flex items-center gap-4 mb-8">
                             <button
                                 onClick={() => setStep('cart')}
@@ -147,7 +224,7 @@ export default function CheckoutPage() {
                                                     </div>
 
                                                     <div className="flex items-center justify-between mt-2">
-                                                        <span className="font-bold text-xl dark:text-white text-gray-900">Rs. {item.price.toLocaleString()}</span>
+                                                        <span className="font-bold text-xl dark:text-white text-gray-900">Rs. {Number(item.price).toLocaleString()}</span>
                                                         <div className="flex items-center gap-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg p-1.5 border border-gray-200 dark:border-gray-600">
                                                             <button
                                                                 onClick={() => updateQuantity(item.id, item.selectedSize, Math.max(0, item.quantity - 1))}
@@ -221,7 +298,7 @@ export default function CheckoutPage() {
                                             </form>
                                         </div>
 
-                                        <div className="bg-white dark:bg-gray-800 p-8 rounded-3xl shadow-lg border border-gray-100 dark:border-gray-700 animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
+                                        <div className="bg-white dark:bg-gray-800 p-8 rounded-3xl shadow-lg border border-gray-100 dark:border-gray-700 animate-fade-in-up">
                                             <h2 className="text-xl font-bold mb-6 dark:text-white flex items-center gap-2">
                                                 <span className="bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 p-2 rounded-lg"><CreditCard className="w-5 h-5" /></span>
                                                 {t('paymentMethod')}
@@ -275,12 +352,18 @@ export default function CheckoutPage() {
                                     <div className="border-t border-gray-200 dark:border-gray-700 pt-4 space-y-2 text-sm">
                                         <div className="flex justify-between text-gray-600 dark:text-gray-300">
                                             <span>{t('subtotal')}</span>
-                                            <span>Rs. {cartTotal.toLocaleString()}</span>
+                                            <span>Rs. {subtotal.toLocaleString()}</span>
                                         </div>
                                         <div className="flex justify-between text-gray-600 dark:text-gray-300">
                                             <span>{t('delivery')}</span>
-                                            <span>Rs. {DELIVERY_CHARGES.toLocaleString()}</span>
+                                            <span>Rs. {deliveryCharge.toLocaleString()}</span>
                                         </div>
+                                        {taxRate > 0 && (
+                                            <div className="flex justify-between text-gray-600 dark:text-gray-300">
+                                                <span>Tax ({taxRate}%)</span>
+                                                <span>Rs. {taxAmount.toLocaleString()}</span>
+                                            </div>
+                                        )}
                                         {discount > 0 && (
                                             <div className="flex justify-between text-green-600 font-medium">
                                                 <span>{t('discount')}</span>
@@ -295,22 +378,41 @@ export default function CheckoutPage() {
 
                                     {step === 'cart' && (
                                         <div className="mt-6">
-                                            <div className="flex gap-2 mb-4">
-                                                <input
-                                                    type="text"
-                                                    placeholder={t('couponCode')}
-                                                    className="flex-grow px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 dark:text-white text-sm outline-none focus:ring-2 focus:ring-amber-500"
-                                                    value={coupon}
-                                                    onChange={(e) => setCoupon(e.target.value)}
-                                                />
+                                            {/* Active Event Promo Tag Display */}
+                                            {activeEvent && (
+                                                <div className="mb-4 p-3 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-200 text-xs flex items-center gap-2">
+                                                    <Sparkles className="w-4 h-4 shrink-0 text-amber-500" />
+                                                    <span>
+                                                        🎉 Use code <strong className="font-mono uppercase">{activeEvent.code}</strong> to get {activeEvent.discountPercentage}% off!
+                                                    </span>
+                                                </div>
+                                            )}
+
+                                            <div className="flex gap-2 mb-2">
+                                                <div className="relative flex-grow">
+                                                    <Tag className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                                                    <input
+                                                        type="text"
+                                                        placeholder="Promo / Coupon Code"
+                                                        className="w-full pl-9 pr-3 py-2 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 dark:text-white text-sm outline-none focus:ring-2 focus:ring-amber-500 uppercase font-mono"
+                                                        value={coupon}
+                                                        onChange={(e) => setCoupon(e.target.value)}
+                                                    />
+                                                </div>
                                                 <button
                                                     onClick={handleApplyCoupon}
-                                                    className="bg-gray-900 dark:bg-white text-white dark:text-black px-4 py-2 rounded-lg text-sm font-medium hover:opacity-90"
+                                                    disabled={validatingCoupon}
+                                                    className="bg-gray-900 dark:bg-white text-white dark:text-black px-4 py-2 rounded-lg text-sm font-medium hover:opacity-90 disabled:opacity-60"
                                                 >
-                                                    {t('apply')}
+                                                    {validatingCoupon ? 'Verifying...' : t('apply')}
                                                 </button>
                                             </div>
-                                            {discount > 0 && <div className="text-green-600 text-xs mb-4">Coupon applied successfully!</div>}
+
+                                            {couponMessage && (
+                                                <div className={`text-xs mb-4 font-medium ${couponMessage.type === 'success' ? 'text-green-600' : 'text-red-500'}`}>
+                                                    {couponMessage.text}
+                                                </div>
+                                            )}
 
                                             <button
                                                 onClick={() => setStep('details')}

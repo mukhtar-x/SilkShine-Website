@@ -178,6 +178,20 @@ export default function HomePage() {
         setTimeout(() => { isBusyRef.current = false; }, 300);
     };
 
+    const [activeDiscount, setActiveDiscount] = useState<{ title: string; code: string; discountPercentage: number } | null>(null);
+    const [copiedCode, setCopiedCode] = useState(false);
+
+    useEffect(() => {
+        fetch('/api/discounts?activeOnly=true')
+            .then((res) => (res.ok ? res.json() : null))
+            .then((data) => {
+                if (data?.code && data?.isActive !== false) {
+                    setActiveDiscount(data);
+                }
+            })
+            .catch((err) => console.error('Error fetching active discount event:', err));
+    }, []);
+
     const [isLoaded, setIsLoaded] = useState(false);
 
     useLayoutEffect(() => {
@@ -188,9 +202,29 @@ export default function HomePage() {
     return (
         <div className="w-full  h-screen overflow-y-auto md:snap-y md:snap-mandatory scroll-smooth [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
 
+
+
             {/* 1. HERO SECTION */}
             <section className="min-h-[100dvh] lg:h-screen w-full md:snap-start md:snap-always relative flex flex-col justify-between bg-gradient-to-b from-amber-50/40 via-white to-gray-50 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950 pb-12">
                 <Navbar />
+                {/* Dynamic Active Discount Promo Banner (Requirement 7) */}
+                {activeDiscount && (
+                    <div className="bg-gradient-to-r from-amber-500 via-amber-600 to-yellow-500 text-black py-2 px-4 z-50 text-center text-xs md:text-sm font-bold shadow-sm flex items-center justify-center gap-2 flex-wrap sticky top-0">
+                        <Sparkles className="w-4 h-4 animate-bounce" />
+                        <span>🎉 {activeDiscount.title} — Get {activeDiscount.discountPercentage}% OFF with promo code:</span>
+                        <span className="bg-black text-amber-400 px-2.5 py-0.5 rounded font-mono uppercase tracking-wider text-xs font-black">{activeDiscount.code}</span>
+                        <button
+                            onClick={() => {
+                                navigator.clipboard.writeText(activeDiscount.code);
+                                setCopiedCode(true);
+                                setTimeout(() => setCopiedCode(false), 2500);
+                            }}
+                            className="ml-1 px-2.5 py-0.5 bg-white text-black hover:bg-gray-100 rounded text-xs transition-colors shadow-sm font-semibold"
+                        >
+                            {copiedCode ? 'Copied! ✓' : 'Copy Code'}
+                        </button>
+                    </div>
+                )}
 
                 <div className="container px-5 md:px-16 lg:px-24 mx-auto flex-grow flex items-center py-10 lg:py-0">
                     <div className="grid md:grid-cols-2 gap-12 lg:gap-16 items-center w-full">
@@ -238,13 +272,13 @@ export default function HomePage() {
                         </div>
 
                         <div className="relative hidden md:flex justify-center items-center py-12 px-4 group rounded-3xl">
-                            <div className="relative z-10">
+                            {/* <div className="relative z-10">
                                 <img
                                     src="/assets/mainlogo.jpeg"
                                     alt="SilkShine Product"
                                     className="w-4/5 sm:w-full max-w-[300px] sm:max-w-md lg:max-w-lg object-contain  animate-pulse"
                                 />
-                            </div>
+                            </div> */}
                         </div>
                     </div>
                 </div>

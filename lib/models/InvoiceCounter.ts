@@ -8,8 +8,8 @@ export interface IInvoiceCounter extends Document {
 
 const InvoiceCounterSchema = new Schema<IInvoiceCounter>(
   {
-    key: { type: String, required: true, unique: true },
-    seq: { type: Number, required: true, default: 0 },
+    key: { type: String, unique: true, default: '' },
+    seq: { type: Number, default: 0 },
   },
   { timestamps: true }
 );

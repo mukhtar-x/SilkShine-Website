@@ -15,12 +15,23 @@ export async function GET() {
         return NextResponse.json(
             products.map(p => ({
                 id: `PROD-${String(p.id).padStart(2, '0')}`,
+                numericId: p.id,
                 name: p.name,
                 type: p.type,
-                size: p.sizes[0] ?? '',
-                price: p.price.toLocaleString(),
+                size: p.sizes?.[0] ?? '',
+                sizes: p.sizes ?? [],
+                price: p.price,
+                oldPrice: p.oldPrice ?? 0,
                 stock: p.stock,
                 status: p.status,
+                description: p.description ?? '',
+                category: p.category ?? 'Hair Care',
+                image: p.image ?? '',
+                images: p.images ?? [],
+                features: p.features ?? [],
+                rating: p.rating ?? 0,
+                reviews: p.reviews ?? 0,
+                reviewsList: p.reviewsList ?? [],
                 _id: p._id,
             }))
         );
@@ -37,11 +48,14 @@ export async function POST(req: Request) {
             name,
             description,
             price,
+            oldPrice,
             stock,
             category,
             type,
             sizes,
             image,
+            images,
+            features,
             rating,
             reviews,
         } = body;
@@ -54,16 +68,37 @@ export async function POST(req: Request) {
         const lastProduct = await Product.findOne({}).sort({ id: -1 }).lean();
         const nextId = lastProduct ? lastProduct.id + 1 : 1;
 
+        const parseSizes = (val: any): string[] => {
+            if (Array.isArray(val)) return val.map(String).map(s => s.trim()).filter(Boolean);
+            if (typeof val === 'string') return val.split(',').map(s => s.trim()).filter(Boolean);
+            return ['Standard'];
+        };
+
+        const parseFeatures = (val: any): string[] => {
+            if (Array.isArray(val)) return val.map(String).map(s => s.trim()).filter(Boolean);
+            if (typeof val === 'string') return val.split('\n').map(s => s.trim()).filter(Boolean);
+            return [];
+        };
+
+        const parseImages = (val: any): string[] => {
+            if (Array.isArray(val)) return val.map(String).map(s => s.trim()).filter(Boolean);
+            if (typeof val === 'string') return val.split(',').map(s => s.trim()).filter(Boolean);
+            return [];
+        };
+
         const created = await Product.create({
             id: nextId,
-            name,
-            description: description || '',
+            name: String(name).trim(),
+            description: String(description || '').trim(),
             price: Number(price),
+            oldPrice: oldPrice ? Number(oldPrice) : 0,
             stock: Number(stock),
-            category: category || 'Hair Care',
-            type: type || 'Standard',
-            sizes: Array.isArray(sizes) ? sizes : [String(sizes || 'Standard')],
-            image: image || '/assets/bottle-shot.png',
+            category: String(category || 'Hair Care').trim(),
+            type: String(type || 'Standard').trim(),
+            sizes: parseSizes(sizes),
+            image: String(image || '/assets/bottle-shot.png').trim(),
+            images: parseImages(images),
+            features: parseFeatures(features),
             rating: Number(rating ?? 0),
             reviews: Number(reviews ?? 0),
             status: computeStatus(Number(stock)),
@@ -79,7 +114,7 @@ export async function POST(req: Request) {
 export async function PUT(req: Request) {
     try {
         const body = await req.json();
-        const { _id, name, description, price, stock, category, type, sizes, image, rating, reviews } = body;
+        const { _id, name, description, price, oldPrice, stock, category, type, sizes, image, images, features, rating, reviews } = body;
 
         if (!_id) {
             return NextResponse.json({ error: 'Product _id is required' }, { status: 400 });
@@ -87,20 +122,45 @@ export async function PUT(req: Request) {
 
         await connectDB();
 
+        const parseSizes = (val: any): string[] => {
+            if (Array.isArray(val)) return val.map(String).map(s => s.trim()).filter(Boolean);
+            if (typeof val === 'string') return val.split(',').map(s => s.trim()).filter(Boolean);
+            return ['Standard'];
+        };
+
+        const parseFeatures = (val: any): string[] => {
+            if (Array.isArray(val)) return val.map(String).map(s => s.trim()).filter(Boolean);
+            if (typeof val === 'string') return val.split('\n').map(s => s.trim()).filter(Boolean);
+            return [];
+        };
+
+        const parseImages = (val: any): string[] => {
+            if (Array.isArray(val)) return val.map(String).map(s => s.trim()).filter(Boolean);
+            if (typeof val === 'string') return val.split(',').map(s => s.trim()).filter(Boolean);
+            return [];
+        };
+
+        const updateData: Record<string, any> = {};
+        if (name !== undefined) updateData.name = String(name).trim();
+        if (description !== undefined) updateData.description = String(description).trim();
+        if (price !== undefined) updateData.price = Number(price);
+        if (oldPrice !== undefined) updateData.oldPrice = Number(oldPrice);
+        if (stock !== undefined) {
+            updateData.stock = Number(stock);
+            updateData.status = computeStatus(Number(stock));
+        }
+        if (category !== undefined) updateData.category = String(category).trim();
+        if (type !== undefined) updateData.type = String(type).trim();
+        if (sizes !== undefined) updateData.sizes = parseSizes(sizes);
+        if (image !== undefined) updateData.image = String(image).trim();
+        if (images !== undefined) updateData.images = parseImages(images);
+        if (features !== undefined) updateData.features = parseFeatures(features);
+        if (rating !== undefined) updateData.rating = Number(rating);
+        if (reviews !== undefined) updateData.reviews = Number(reviews);
+
         const updated = await Product.findByIdAndUpdate(
             _id,
-            {
-                ...(name !== undefined && { name }),
-                ...(description !== undefined && { description }),
-                ...(price !== undefined && { price: Number(price) }),
-                ...(stock !== undefined && { stock: Number(stock), status: computeStatus(Number(stock)) }),
-                ...(category !== undefined && { category }),
-                ...(type !== undefined && { type }),
-                ...(sizes !== undefined && { sizes: Array.isArray(sizes) ? sizes : String(sizes).split(',').map((size) => size.trim()).filter(Boolean) }),
-                ...(image !== undefined && { image }),
-                ...(rating !== undefined && { rating: Number(rating) }),
-                ...(reviews !== undefined && { reviews: Number(reviews) }),
-            },
+            updateData,
             { new: true }
         ).lean();
 

@@ -188,6 +188,17 @@ export default function InvoiceGeneratorPage() {
                     setDeliveryCharge(0);
                     setTaxRate(0);
                 }
+
+                // Pre-fill global delivery charge & tax rate from settings
+                fetch('/api/settings')
+                    .then(r => r.ok ? r.json() : null)
+                    .then(s => {
+                        if (s) {
+                            if (s.deliveryCharge != null) setDeliveryCharge(Number(s.deliveryCharge));
+                            if (s.taxRate != null) setTaxRate(Number(s.taxRate));
+                        }
+                    })
+                    .catch(() => {});
             } catch (error) {
                 console.error(error);
                 setErrorMessage((error as Error).message || 'Failed to load invoice data');
