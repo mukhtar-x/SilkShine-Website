@@ -107,12 +107,17 @@ export default function InvoiceGeneratorPage() {
     const [cardAuthorizationCode, setCardAuthorizationCode] = useState('');
     const [sourceOrderId, setSourceOrderId] = useState<string | null>(null);
 
-    const subtotal = useMemo(
-        () => items.reduce((total, item) => total + item.quantity * item.rate, 0),
+    const grossSubtotal = useMemo(
+        () => items.filter(item => item.rate >= 0).reduce((total, item) => total + item.quantity * item.rate, 0),
         [items]
     );
-    const taxAmount = useMemo(() => (subtotal * taxRate) / 100, [subtotal, taxRate]);
-    const grandTotal = useMemo(() => subtotal + taxAmount + deliveryCharge, [subtotal, taxAmount, deliveryCharge]);
+    const discountTotal = useMemo(
+        () => items.filter(item => item.rate < 0).reduce((total, item) => total + Math.abs(item.quantity * item.rate), 0),
+        [items]
+    );
+    const netSubtotal = grossSubtotal - discountTotal;
+    const taxAmount = useMemo(() => (netSubtotal * taxRate) / 100, [netSubtotal, taxRate]);
+    const grandTotal = useMemo(() => netSubtotal + taxAmount + deliveryCharge, [netSubtotal, taxAmount, deliveryCharge]);
 
     // Pre-load local logo as Base64 to eliminate html2canvas async loading issues
     useEffect(() => {
@@ -174,17 +179,32 @@ export default function InvoiceGeneratorPage() {
                     setBuyerPhone(data.order.contact);
                     setBuyerNtn('');
                     setPaymentType(data.order.method === 'Card' ? 'Card' : 'Cash');
-                    setItems(
-                        data.order.items.length > 0
-                            ? data.order.items.map((item, index) => ({
-                                id: `${index + 1}`,
-                                description: item.name,
-                                subDescription: item.size || '',
-                                quantity: item.quantity,
-                                rate: item.price,
-                            }))
-                            : [{ id: '1', description: '', subDescription: '', quantity: 1, rate: 0 }]
-                    );
+
+                    // Calculate items raw total and compare with order totalAmount to factor in coupon discounts[cite: 3]
+                    const rawItemsTotal = data.order.items.reduce((sum, item) => sum + item.quantity * item.price, 0);
+                    const discountAmount = data.order.totalAmount < rawItemsTotal ? rawItemsTotal - data.order.totalAmount : 0;
+
+                    const mappedItems: LineItem[] = data.order.items.length > 0
+                        ? data.order.items.map((item, index) => ({
+                            id: `${index + 1}`,
+                            description: item.name,
+                            subDescription: item.size || '',
+                            quantity: item.quantity,
+                            rate: item.price,
+                        }))
+                        : [{ id: '1', description: '', subDescription: '', quantity: 1, rate: 0 }];
+
+                    if (discountAmount > 0) {
+                        mappedItems.push({
+                            id: `${mappedItems.length + 1}`,
+                            description: 'Coupon / Discount Applied',
+                            subDescription: '',
+                            quantity: 1,
+                            rate: -discountAmount,
+                        });
+                    }
+
+                    setItems(mappedItems);
                     setDeliveryCharge(0);
                     setTaxRate(0);
                 }
@@ -198,7 +218,7 @@ export default function InvoiceGeneratorPage() {
                             if (s.taxRate != null) setTaxRate(Number(s.taxRate));
                         }
                     })
-                    .catch(() => {});
+                    .catch(() => { });
             } catch (error) {
                 console.error(error);
                 setErrorMessage((error as Error).message || 'Failed to load invoice data');
@@ -274,8 +294,6 @@ export default function InvoiceGeneratorPage() {
                             )}
                         </div>
                     </div>
-
-
                 </div>
 
                 {(errorMessage || statusMessage) && (
@@ -544,7 +562,6 @@ export default function InvoiceGeneratorPage() {
                                                     <label className="block text-xs font-medium text-slate-600">Unit Price</label>
                                                     <input
                                                         type="number"
-                                                        min={0}
                                                         value={item.rate}
                                                         onChange={(e) => handleItemChange(item.id, 'rate', Number(e.target.value) || 0)}
                                                         className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none focus:border-slate-400"
@@ -644,8 +661,14 @@ export default function InvoiceGeneratorPage() {
                                 <div className="rounded-3xl border border-slate-200 bg-white p-4">
                                     <div className="flex items-center justify-between text-slate-600">
                                         <span>Subtotal</span>
-                                        <span>PKR {subtotal.toLocaleString()}</span>
+                                        <span>PKR {grossSubtotal.toLocaleString()}</span>
                                     </div>
+                                    {discountTotal > 0 && (
+                                        <div className="flex items-center justify-between text-emerald-600">
+                                            <span>Discount</span>
+                                            <span>- PKR {discountTotal.toLocaleString()}</span>
+                                        </div>
+                                    )}
                                     <div className="flex items-center justify-between text-slate-600">
                                         <span>Delivery</span>
                                         <span>PKR {deliveryCharge.toLocaleString()}</span>
@@ -673,7 +696,6 @@ export default function InvoiceGeneratorPage() {
                         </span>
                     </InvoicePdfDownloadButton>
                 </div>
-
             </div>
         </div>
     );
